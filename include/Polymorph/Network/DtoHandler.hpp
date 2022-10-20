@@ -15,20 +15,34 @@
 
 namespace Polymorph::Network
 {
-
+    /**
+     * @brief DtoHandler class to store and retrieve a function to handle a specific received packet
+     * @tparam T
+     */
     template<typename T>
     struct DtoHandler
     {
         private:
+            /**
+             * @property _handlers Map of callback functions to handle a specific packet
+             */
             static std::map<int, std::vector<std::function<void(PacketHeader, T &)>>> _handlers;
 
         public:
+            /**
+             * @brief Register a callback function to handle a specific packet
+             * @param opId The operation id of the packet
+             * @param callback The callback function to handle the packet
+             */
             static void registerHandler(int id, std::function<void(PacketHeader, T &)> handler)
             {
                 _handlers[id].push_back(handler);
             }
 
             /**
+             * @brief Cast the binary format of the packet and call all the callback functions to handle it
+             * @param bytes The packet still in bytes
+             */
             static void handleReceivedPacket(const std::vector<std::byte> &bytes)
             {
                 Packet<T> packet = SerializerTrait<Packet<T>>::deserialize(bytes);
