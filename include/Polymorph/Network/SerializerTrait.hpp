@@ -14,6 +14,10 @@
 namespace Polymorph::Network
 {
 
+    /**
+     * @brief SerializerTrait struct to serialize and deserialize a type before/after a transfer over the network
+     * @tparam T The type to serialize/deserialize
+     */
     template<typename T, bool = std::is_standard_layout<T>::value && std::is_trivial<T>::value>
     struct SerializerTrait
     {
