@@ -24,7 +24,7 @@ namespace Polymorph::Network
     {
         PacketHeader header;
         T payload;
-    };
+    }
 #ifdef _WIN32
     ;
     #pragma pack(pop)
