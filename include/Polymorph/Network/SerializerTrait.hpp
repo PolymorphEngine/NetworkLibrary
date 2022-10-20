@@ -61,9 +61,11 @@ namespace Polymorph::Network
             static Packet<T> deserialize(const std::vector<std::byte> &buffer)
             {
                 Packet<T> packet;
+                std::vector<std::byte> payloadBuffer(sizeof(T));
 
+                std::copy(buffer.begin() + sizeof(PacketHeader), buffer.end(), std::back_inserter(payloadBuffer));
                 packet.header = SerializerTrait<PacketHeader>::deserialize(buffer);
-                packet.payload = SerializerTrait<T>::deserialize(buffer);
+                packet.payload = SerializerTrait<T>::deserialize(payloadBuffer);
                 return packet;
             }
 

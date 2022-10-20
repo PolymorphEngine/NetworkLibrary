@@ -28,11 +28,12 @@ namespace Polymorph::Network
                 _handlers[id].push_back(handler);
             }
 
-            static void handleReceivedPacket(PacketHeader packetHeader, std::vector<std::byte> &bytes)
+            /**
+            static void handleReceivedPacket(const std::vector<std::byte> &bytes)
             {
-                T payload = SerializerTrait<T>::deserialize(bytes);
-                for (auto &handler: _handlers[packetHeader.opId])
-                    handler(packetHeader, payload);
+                Packet<T> packet = SerializerTrait<Packet<T>>::deserialize(bytes);
+                for (auto &handler: _handlers[packet.header.opId])
+                    handler(packet.header, packet.payload);
             }
 
             static void unregisterHandler(int opId)
