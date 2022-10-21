@@ -32,26 +32,26 @@ void polymorph::network::SessionStore::registerAuthoredClient(asio::ip::udp::end
 
 polymorph::network::SessionId polymorph::network::SessionStore::registerClient(asio::ip::udp::endpoint endpoint)
 {
-    std::lock_guard<std::mutex> lock(_udpSessionsMutex);
-
     try {
+        std::lock_guard<std::mutex> lock(_udpSessionsMutex);
         return _udpSessions.at(endpoint);
     } catch (std::out_of_range &e) {
         auto sId = _findAvailableUdpSessionId();
+        std::lock_guard<std::mutex> lock(_udpSessionsMutex);
         _udpSessions.emplace(endpoint, sId);
         return sId;
     }
 }
 
-void polymorph::network::SessionStore::registerAuthoredClient(asio::ip::tcp::socket socket,
-        polymorph::network::SessionId sessionId, polymorph::network::AuthorizationKey key)
+void polymorph::network::SessionStore::registerAuthoredClient(asio::ip::tcp::endpoint endpoint,
+                                                              polymorph::network::SessionId sessionId, polymorph::network::AuthorizationKey key)
 {
     try {
         std::unique_lock<std::mutex> lock(_tcpSessionsAuthorizationKeysMutex);
         auto verifyKey = _tcpSessionsAuthorizationKeys.at(sessionId);
         lock.unlock();
         if (authorizationKey::areSame(verifyKey, key)) {
-            _tcpSessions[socket.remote_endpoint()] = sessionId;
+            _tcpSessions[endpoint] = sessionId;
         } else {
             throw exceptions::UnauthorizedException("InvalidAuthorization key");
         }
@@ -60,18 +60,18 @@ void polymorph::network::SessionStore::registerAuthoredClient(asio::ip::tcp::soc
     }
 }
 
-polymorph::network::SessionId polymorph::network::SessionStore::registerClient(asio::ip::tcp::socket socket)
+polymorph::network::SessionId polymorph::network::SessionStore::registerClient(asio::ip::tcp::endpoint endpoint)
 {
     auto sId = _findAvailableTcpSessionId();
     std::lock_guard<std::mutex> lock(_tcpSessionsMutex);
 
     try {
-        _tcpSessions.at(socket.remote_endpoint());
+        _tcpSessions.at(endpoint);
         throw exceptions::AlreadyRegisteredException("Client already connected");
     } catch (std::out_of_range &e) {
     }
 
-    _tcpSessions.emplace(std::move(socket.remote_endpoint()), sId);
+    _tcpSessions.emplace(std::move(endpoint), sId);
     return sId;
 }
 
@@ -82,11 +82,11 @@ void polymorph::network::SessionStore::removeClient(asio::ip::udp::endpoint endp
     _udpSessions.erase(endpoint);
 }
 
-void polymorph::network::SessionStore::removeClient(asio::ip::tcp::socket socket)
+void polymorph::network::SessionStore::removeClient(asio::ip::tcp::endpoint endpoint)
 {
     std::lock_guard<std::mutex> lock(_tcpSessionsMutex);
 
-    _tcpSessions.erase(socket.remote_endpoint());
+    _tcpSessions.erase(endpoint);
 }
 
 bool polymorph::network::SessionStore::removeClient(polymorph::network::SessionId sessionid)
@@ -113,11 +113,11 @@ polymorph::network::SessionId polymorph::network::SessionStore::sessionOf(asio::
     }
 }
 
-polymorph::network::SessionId polymorph::network::SessionStore::sessionOf(asio::ip::tcp::socket socket)
+polymorph::network::SessionId polymorph::network::SessionStore::sessionOf(asio::ip::tcp::endpoint endpoint)
 {
     try {
         std::lock_guard<std::mutex> lock(_tcpSessionsMutex);
-        return _tcpSessions.at(socket.remote_endpoint());
+        return _tcpSessions.at(endpoint);
     } catch (std::out_of_range &e) {
         throw exceptions::UnknownSessionException("Unknown session");
     }
