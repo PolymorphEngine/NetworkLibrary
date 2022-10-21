@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstdint>
+#include <array>
 
 namespace polymorph::network
 {
@@ -19,5 +20,7 @@ namespace polymorph::network
     using SessionId = std::uint16_t;
 
     using PayloadSize = std::uint16_t;
+
+    using AuthorizationKey = std::array<std::uint8_t, 16>;
 
 }
