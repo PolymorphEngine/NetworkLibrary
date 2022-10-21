@@ -9,7 +9,7 @@
 
 #include <cstdint>
 
-namespace Polymorph::Network
+namespace polymorph::network
 {
 
     using OpId = std::uint16_t;

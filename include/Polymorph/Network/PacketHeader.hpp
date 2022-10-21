@@ -12,7 +12,7 @@
 #include <vector>
 #include "Polymorph/Network/types.hpp"
 
-namespace Polymorph::Network
+namespace polymorph::network
 {
     /**
      * @brief Packet header struct
