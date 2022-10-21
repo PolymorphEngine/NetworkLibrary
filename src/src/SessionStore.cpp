@@ -11,7 +11,7 @@
 #include "Polymorph/Network/exceptions/UnknownAuthorizationKeyException.hpp"
 #include "Polymorph/Network/exceptions/UnauthorizedException.hpp"
 #include "Polymorph/Network/exceptions/AlreadyRegisteredException.hpp"
-#include "Polymorph/Network/exceptions/UnkonownSessionException.hpp"
+#include "Polymorph/Network/exceptions/UnknownSessionException.hpp"
 
 void polymorph::network::SessionStore::registerAuthoredClient(asio::ip::udp::endpoint endpoint,
         polymorph::network::SessionId sessionId, polymorph::network::AuthorizationKey key)
