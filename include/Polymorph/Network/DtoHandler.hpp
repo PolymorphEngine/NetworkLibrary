@@ -26,7 +26,7 @@ namespace polymorph::network
             /**
              * @property _handlers Map of callback functions to handle a specific packet
              */
-            static inline std::map<int, std::vector<std::function<void(PacketHeader, T &)>>> _handlers;
+            static inline std::map<OpId, std::vector<std::function<void(PacketHeader, T &)>>> _handlers;
 
             /**
              * @property _mutex Mutex to lock the map
@@ -39,7 +39,7 @@ namespace polymorph::network
              * @param opId The operation id of the packet
              * @param callback The callback function to handle the packet
              */
-            static void registerHandler(int id, std::function<void(PacketHeader, T &)> handler)
+            static void registerHandler(OpId id, std::function<void(PacketHeader, T &)> handler)
             {
                 std::lock_guard<std::mutex> lock(_mutex);
                 _handlers[id].push_back(handler);
@@ -58,7 +58,7 @@ namespace polymorph::network
                     handler(packet.header, packet.payload);
             }
 
-            static void unregisterHandler(int opId)
+            static void unregisterHandler(OpId opId)
             {
                 std::lock_guard<std::mutex> lock(_mutex);
                 _handlers.erase(opId);
