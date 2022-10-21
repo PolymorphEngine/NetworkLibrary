@@ -40,7 +40,7 @@ namespace polymorph::network
         {
             T dto;
 
-            if (buffer.size() != sizeof(T))
+            if (buffer.size() < sizeof(T))
                 throw exceptions::DeserializingException("Buffer size does not match the size of the type");
 
             std::memcpy(&dto, buffer.data(), sizeof(T));
@@ -71,8 +71,8 @@ namespace polymorph::network
                 Packet<T> packet;
                 std::vector<std::byte> payloadBuffer;
 
-                if (buffer.size() != sizeof(PacketHeader) + sizeof(T))
-                    throw exceptions::DeserializingException("Buffer size does not match the size of the type");
+                if (buffer.size() < sizeof(PacketHeader))
+                    throw exceptions::DeserializingException("Buffer size does not contains a packet header");
 
                 payloadBuffer.reserve(buffer.size() - sizeof(PacketHeader));
                 std::copy(buffer.begin() + sizeof(PacketHeader), buffer.end(), std::back_inserter(payloadBuffer));
