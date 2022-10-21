@@ -26,12 +26,12 @@ namespace polymorph::network
             /**
              * @property _handlers Map of callback functions to handle a specific packet
              */
-            static std::map<int, std::vector<std::function<void(PacketHeader, T &)>>> _handlers;
+            static inline std::map<int, std::vector<std::function<void(PacketHeader, T &)>>> _handlers;
 
             /**
              * @property _mutex Mutex to lock the map
              */
-            static std::mutex _mutex;
+            static inline  std::mutex _mutex;
 
         public:
             /**
