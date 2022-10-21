@@ -21,7 +21,7 @@ namespace polymorph::network::exceptions
         public:
             UnknownSessionException(std::string message) : _message(message) {};
 
-            ~UnknownSessionException() override = default
+            ~UnknownSessionException() override = default;
 
             const char *what() const noexcept {
                 return _message.c_str();
