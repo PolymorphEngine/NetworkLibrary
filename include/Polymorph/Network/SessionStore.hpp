@@ -96,12 +96,12 @@ namespace polymorph::network
              * @throws UnauthorizedException if the authorization key is not valid
              * @throws UnknownAuthorizationKeyException if the authorization key is unknown
              */
-            void registerAuthoredClient(asio::ip::tcp::socket socket, SessionId sessionId, AuthorizationKey key);
+            void registerAuthoredClient(asio::ip::tcp::endpoint endpoint, SessionId sessionId, AuthorizationKey key);
 
             /**
              * @brief Register a client and generate a unique SessionId
              */
-            SessionId registerClient(asio::ip::tcp::socket socket);
+            SessionId registerClient(asio::ip::tcp::endpoint endpoint);
 
             /**
              * @brief Remove a client from the store from its endpoint (UDP)
@@ -111,7 +111,7 @@ namespace polymorph::network
             /**
              * @brief Remove a client from the store from its endpoint (TCP)
              */
-            void removeClient(asio::ip::tcp::socket socket);
+            void removeClient(asio::ip::tcp::endpoint endpoint);
 
             /**
              * @brief Remove a client from the store from its sessionId
@@ -142,7 +142,7 @@ namespace polymorph::network
              * @brief Get the sessionId of a client from an endpoint (TCP)
              * @throws UnknownSessionException if the client is not registered
              */
-            SessionId sessionOf(asio::ip::tcp::socket socket);
+            SessionId sessionOf(asio::ip::tcp::endpoint endpoint);
 
             /**
              * @brief Get the endpoint (UDP) of a client from its sessionId
