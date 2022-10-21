@@ -10,6 +10,7 @@
 #include <cstring>
 #include <vector>
 #include "Polymorph/Network/Packet.hpp"
+#include "Polymorph/Network/exceptions/DeserializingException.hpp"
 
 namespace polymorph::network
 {
@@ -39,6 +40,9 @@ namespace polymorph::network
         {
             T dto;
 
+            if (buffer.size() != sizeof(T))
+                throw exceptions::DeserializingException("Buffer size does not match the size of the type");
+
             std::memcpy(&dto, buffer.data(), sizeof(T));
             return dto;
         }
@@ -66,6 +70,9 @@ namespace polymorph::network
             {
                 Packet<T> packet;
                 std::vector<std::byte> payloadBuffer(sizeof(T));
+
+                if (buffer.size() != sizeof(PacketHeader) + sizeof(T))
+                    throw exceptions::DeserializingException("Buffer size does not match the size of the type");
 
                 std::copy(buffer.begin() + sizeof(PacketHeader), buffer.end(), std::back_inserter(payloadBuffer));
                 packet.header = SerializerTrait<PacketHeader>::deserialize(buffer);
