@@ -13,7 +13,7 @@
 #include "Polymorph/Network/PacketHeader.hpp"
 #include "Polymorph/Network/SerializerTrait.hpp"
 
-namespace Polymorph::Network
+namespace polymorph::network
 {
     /**
      * @brief DtoHandler class to store and retrieve a function to handle a specific received packet

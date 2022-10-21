@@ -11,7 +11,7 @@
 #include <vector>
 #include "Polymorph/Network/Packet.hpp"
 
-namespace Polymorph::Network
+namespace polymorph::network
 {
 
     /**

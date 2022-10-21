@@ -9,7 +9,7 @@
 
 #include "Polymorph/Network/PacketHeader.hpp"
 
-namespace Polymorph::Network
+namespace polymorph::network
 {
 
 #ifdef _WIN32
