@@ -16,48 +16,42 @@
 void polymorph::network::SessionStore::registerAuthoredClient(asio::ip::udp::endpoint endpoint,
         polymorph::network::SessionId sessionId, polymorph::network::AuthorizationKey key)
 {
-    try {
-        std::unique_lock<std::mutex> lock(_udpSessionsAuthorizationKeysMutex);
-        auto verifyKey = _udpSessionsAuthorizationKeys.at(sessionId);
-        lock.unlock();
-        if (authorizationKey::areSame(verifyKey, key)) {
-            _udpSessions[endpoint] = sessionId;
-        } else {
-            throw exceptions::UnauthorizedException("InvalidAuthorization key");
-        }
-    } catch (std::out_of_range &e) {
+    std::unique_lock<std::mutex> lock(_udpSessionsAuthorizationKeysMutex);
+
+    if (!_udpSessionsAuthorizationKeys.contains(sessionId))
         throw exceptions::UnknownAuthorizationKeyException("Unknown authorization key");
-    }
+    auto verifyKey = _udpSessionsAuthorizationKeys[sessionId];
+    lock.unlock();
+    if (authorizationKey::areSame(verifyKey, key))
+        _udpSessions[endpoint] = sessionId;
+    else
+        throw exceptions::UnauthorizedException("InvalidAuthorization key");
 }
 
 polymorph::network::SessionId polymorph::network::SessionStore::registerClient(asio::ip::udp::endpoint endpoint)
 {
-    try {
-        std::lock_guard<std::mutex> lock(_udpSessionsMutex);
-        return _udpSessions.at(endpoint);
-    } catch (std::out_of_range &e) {
-        auto sId = _findAvailableUdpSessionId();
-        std::lock_guard<std::mutex> lock(_udpSessionsMutex);
-        _udpSessions.emplace(endpoint, sId);
-        return sId;
-    }
+    auto sId = _findAvailableUdpSessionId();
+    std::lock_guard<std::mutex> lock(_udpSessionsMutex);
+
+    if (_udpSessions.contains(endpoint))
+        return _udpSessions[endpoint];
+    _udpSessions.emplace(endpoint, sId);
+    return sId;
 }
 
 void polymorph::network::SessionStore::registerAuthoredClient(asio::ip::tcp::endpoint endpoint,
-                                                              polymorph::network::SessionId sessionId, polymorph::network::AuthorizationKey key)
+        polymorph::network::SessionId sessionId, polymorph::network::AuthorizationKey key)
 {
-    try {
-        std::unique_lock<std::mutex> lock(_tcpSessionsAuthorizationKeysMutex);
-        auto verifyKey = _tcpSessionsAuthorizationKeys.at(sessionId);
-        lock.unlock();
-        if (authorizationKey::areSame(verifyKey, key)) {
-            _tcpSessions[endpoint] = sessionId;
-        } else {
-            throw exceptions::UnauthorizedException("InvalidAuthorization key");
-        }
-    } catch (std::out_of_range &e) {
+    std::unique_lock<std::mutex> lock(_tcpSessionsAuthorizationKeysMutex);
+
+    if (!_tcpSessionsAuthorizationKeys.contains(sessionId))
         throw exceptions::UnknownAuthorizationKeyException("Unknown authorization key");
-    }
+    auto verifyKey = _tcpSessionsAuthorizationKeys[sessionId];
+    lock.unlock();
+    if (authorizationKey::areSame(verifyKey, key))
+        _tcpSessions[endpoint] = sessionId;
+    else
+        throw exceptions::UnauthorizedException("InvalidAuthorization key");
 }
 
 polymorph::network::SessionId polymorph::network::SessionStore::registerClient(asio::ip::tcp::endpoint endpoint)
@@ -65,12 +59,8 @@ polymorph::network::SessionId polymorph::network::SessionStore::registerClient(a
     auto sId = _findAvailableTcpSessionId();
     std::lock_guard<std::mutex> lock(_tcpSessionsMutex);
 
-    try {
-        _tcpSessions.at(endpoint);
+    if (_tcpSessions.contains(endpoint))
         throw exceptions::AlreadyRegisteredException("Client already connected");
-    } catch (std::out_of_range &e) {
-    }
-
     _tcpSessions.emplace(std::move(endpoint), sId);
     return sId;
 }
@@ -105,23 +95,21 @@ bool polymorph::network::SessionStore::removeClient(polymorph::network::SessionI
 
 polymorph::network::SessionId polymorph::network::SessionStore::sessionOf(asio::ip::udp::endpoint endpoint)
 {
-    try {
-        std::lock_guard<std::mutex> lock(_udpSessionsMutex);
-        return _udpSessions.at(endpoint);
-    } catch (std::out_of_range &e) {
+    std::lock_guard<std::mutex> lock(_udpSessionsMutex);
+
+    if (!_udpSessions.contains(endpoint))
         throw exceptions::UnknownSessionException("Unknown session");
-    }
+    return _udpSessions.at(endpoint);
 }
 
 polymorph::network::SessionId polymorph::network::SessionStore::sessionOf(asio::ip::tcp::endpoint endpoint)
 {
-    try {
-        std::lock_guard<std::mutex> lock(_tcpSessionsMutex);
-        return _tcpSessions.at(endpoint);
-    } catch (std::out_of_range &e) {
+    std::lock_guard<std::mutex> lock(_tcpSessionsMutex);
+
+    if (!_tcpSessions.contains(endpoint))
         throw exceptions::UnknownSessionException("Unknown session");
-    }
-}
+    return _tcpSessions.at(endpoint);
+ }
 
 asio::ip::udp::endpoint polymorph::network::SessionStore::udpEndpointOf(polymorph::network::SessionId session)
 {
@@ -162,13 +150,11 @@ polymorph::network::SessionStore::generateUdpAuthorizationKey(polymorph::network
 {
     std::lock_guard<std::mutex> lock(_udpSessionsAuthorizationKeysMutex);
 
-    try {
-        return _udpSessionsAuthorizationKeys.at(sessionId);
-    } catch (std::out_of_range &e) {
-        auto key = authorizationKey::generate();
-        _udpSessionsAuthorizationKeys.emplace(sessionId, key);
-        return key;
-    }
+    if (_udpSessionsAuthorizationKeys.contains(sessionId))
+        return _udpSessionsAuthorizationKeys[sessionId];
+    auto key = authorizationKey::generate();
+    _udpSessionsAuthorizationKeys.emplace(sessionId, key);
+    return key;
 }
 
 polymorph::network::AuthorizationKey
@@ -176,13 +162,11 @@ polymorph::network::SessionStore::generateTcpAuthorizationKey(polymorph::network
 {
     std::lock_guard<std::mutex> lock(_tcpSessionsAuthorizationKeysMutex);
 
-    try {
-        return _tcpSessionsAuthorizationKeys.at(sessionId);
-    } catch (std::out_of_range &e) {
-        auto key = authorizationKey::generate();
-        _tcpSessionsAuthorizationKeys.emplace(sessionId, key);
-        return key;
-    }
+    if (_tcpSessionsAuthorizationKeys.contains(sessionId))
+        return _tcpSessionsAuthorizationKeys[sessionId];
+    auto key = authorizationKey::generate();
+    _tcpSessionsAuthorizationKeys.emplace(sessionId, key);
+    return key;
 }
 
 polymorph::network::SessionId polymorph::network::SessionStore::_findAvailableTcpSessionId()
