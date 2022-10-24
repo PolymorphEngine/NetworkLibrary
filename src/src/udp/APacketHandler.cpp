@@ -39,6 +39,7 @@ void polymorph::network::udp::APacketHandler::packetReceived(asio::ip::udp::endp
         std::cerr << "Error while deserializing packet header: " << e.what() << std::endl;
         return;
     }
+    _onPacketReceived(from, header, bytes);
     _broadcastReceivedPacket(header, bytes);
 }
 
