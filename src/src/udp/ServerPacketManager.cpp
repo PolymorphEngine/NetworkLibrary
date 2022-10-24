@@ -45,5 +45,10 @@ polymorph::network::PacketId
 polymorph::network::udp::ServerPacketManager::packetIdOf(const asio::ip::udp::endpoint &endpoint)
 {
     std::lock_guard<std::mutex> lock(_packetIdsMutex);
-    return _currentPacketIds.at(endpoint);
+    if (_currentPacketIds.contains(endpoint))
+        return ++_currentPacketIds[endpoint];
+    else {
+        _currentPacketIds[endpoint] = 1;
+        return 1;
+    }
 }
