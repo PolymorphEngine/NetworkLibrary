@@ -38,44 +38,44 @@ namespace polymorph::network::udp
 
         private:
             /**
-             * @brief Map of all the packets that are waiting for an operation to be completed for a specific endpoint
+             * @property Map of all the packets that are waiting for an operation to be completed for a specific endpoint
              */
             std::map<asio::ip::udp::endpoint, std::unique_ptr<PacketStore>> _packetStores;
 
             /**
-             * @brief Map of endpoint and their current packet id
+             * @property Map of endpoint and their current packet id
              */
             std::map<asio::ip::udp::endpoint, PacketId> _currentPacketIds;
 
             /**
-             * @brief Mutex used to protect the _packetStores map
+             * @property Mutex used to protect the _packetStores map
              */
             std::mutex _clientsStoresMutex;
 
             /**
-             * @brief Mutex used to protect the _currentPacketIds map
+             * @property Mutex used to protect the _currentPacketIds map
              */
             std::mutex _packetIdsMutex;
 
             /**
-             * @brief The io_context used to create the timer and sockets
+             * @property The io_context used to create the timer and sockets
              */
             asio::io_context& _io_context;
 
             /**
-             * @brief Map of OpId to bool, if the bool is true, the packet will be sent again if not acknowledged
+             * @property Map of OpId to bool, if the bool is true, the packet will be sent again if not acknowledged
              */
             std::map<OpId, bool>& _safeties;
 
             /**
-             * @brief Callback called when a packet needs to be resent
+             * @property Callback called when a packet needs to be resent
              * @param data The data of the packet
              * @param endpoint The endpoint to which the packet needs to be resent
              */
             std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> _resendCallback;
 
             /**
-             * @brief The endpoint to which the packet should be sent
+             * @property The endpoint to which the packet should be sent
              */
             asio::ip::udp::endpoint _endpoint;
 
