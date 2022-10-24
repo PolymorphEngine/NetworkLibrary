@@ -42,10 +42,29 @@ namespace polymorph::network::udp {
 
 
         private:
+            /**
+             * @property The vector containing the packets waiting to be sent
+             */
             std::queue<std::vector<std::byte>> _sendQueue;
+
+            /**
+             * @property An array containing the data received that need to be processed
+             */
             std::array<std::byte, 1024> _receiveBuffer;
+
+            /**
+             * @property The IPacketHandler to use to handle packets
+             */
             IPacketHandler &_packetHandler;
+
+            /**
+             * @property The socket to use to send and receive packets
+             */
             asio::ip::udp::socket &_socket;
+
+            /**
+             * @property Atomic boolean to know if we are currently busy sending a packet
+             */
             std::atomic<bool> _writeInProgress;
 
 
