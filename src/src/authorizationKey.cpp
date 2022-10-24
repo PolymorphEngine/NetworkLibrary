@@ -21,7 +21,7 @@ namespace polymorph::network::authorizationKey
 
         while (areSame(key, zero)) {
             for (auto &byte: key)
-                byte = dis(gen);
+                byte = static_cast<unsigned char>(dis(gen));
         }
         return key;
     }

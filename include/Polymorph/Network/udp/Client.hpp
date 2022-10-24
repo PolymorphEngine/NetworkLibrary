@@ -70,10 +70,10 @@ namespace polymorph::network::udp
                 _connector->send(_serverEndpoint, sPacket);
             }
 
-            void ackReceived(asio::ip::udp::endpoint from, PacketId acknoledgedId) override;
+            void ackReceived(const asio::ip::udp::endpoint& from, PacketId acknoledgedId) override;
 
             void
-            packetSent(asio::ip::udp::endpoint to, PacketHeader &header, const std::vector<std::byte> &bytes) override;
+            packetSent(const asio::ip::udp::endpoint& to, PacketHeader &header, const std::vector<std::byte> &bytes) override;
 
             void connect(std::function<void(bool, SessionId session)> callback);
 
@@ -84,8 +84,7 @@ namespace polymorph::network::udp
                                    const std::vector<std::byte> &bytes) override;
 
         private:
-            void _sendAckPacket(const asio::ip::udp::endpoint &from, const PacketHeader &header,
-                                const std::vector<std::byte> &bytes);
+            void _sendAckPacket(const asio::ip::udp::endpoint &from, const PacketHeader &header);
 
 //////////////////////--------------------------/////////////////////////
 

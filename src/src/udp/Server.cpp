@@ -18,7 +18,7 @@ polymorph::network::udp::Server::Server(std::uint16_t port, std::map<OpId, bool>
         _packetManager(_context, safeties,
             [this](const std::vector<std::byte> &sPacket, const asio::ip::udp::endpoint &recipient) {
                 _socket.async_send_to(asio::buffer(sPacket), recipient,
-                    [recipient](const asio::error_code &error, std::size_t bytes_transferred) {
+                    [recipient](const asio::error_code &error, std::size_t) {
                         if (error) {
                             std::cerr << "Error while sending packet: " << error.message() << std::endl;
                             return;
@@ -42,7 +42,7 @@ void polymorph::network::udp::Server::ackReceived(const asio::ip::udp::endpoint 
 
 void polymorph::network::udp::Server::packetSent(const asio::ip::udp::endpoint &to,
                                                  const polymorph::network::PacketHeader &header,
-                                                 const std::vector<std::byte> &data)
+                                                 const std::vector<std::byte>&)
 {
     if (!_packetManager.hasClient(to)) {
         std::cerr << "Sent packet to unknown client!" << std::endl;
@@ -58,11 +58,11 @@ void polymorph::network::udp::Server::_onPacketReceived(const asio::ip::udp::end
     if (header.opId != ConnectionDto::opId)
         _handleConnectionHandshake(from, header, bytes);
     if (_safeties.contains(header.opId) && _safeties.at(header.opId))
-        _sendAckPacket(from, header, bytes);
+        _sendAckPacket(from, header);
 }
 
 void polymorph::network::udp::Server::_handleConnectionHandshake(const asio::ip::udp::endpoint &from,
-                                                                 const polymorph::network::PacketHeader &header,
+                                                                 const polymorph::network::PacketHeader&,
                                                                  const std::vector<std::byte> &bytes)
 {
     auto packet = SerializerTrait<Packet<ConnectionDto>>::deserialize(bytes);
@@ -87,7 +87,7 @@ void polymorph::network::udp::Server::_handleConnectionHandshake(const asio::ip:
 }
 
 void polymorph::network::udp::Server::_sendAckPacket(const asio::ip::udp::endpoint &from,
-    const polymorph::network::PacketHeader &header, const std::vector<std::byte> &bytes)
+    const polymorph::network::PacketHeader &header)
 {
     ACKDto ack{ .id = header.pId};
     sendTo<ACKDto>(ACKDto::opId, ack, _sessionStore.sessionOf(from));

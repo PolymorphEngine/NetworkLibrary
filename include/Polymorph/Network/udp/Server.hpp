@@ -124,8 +124,7 @@ namespace polymorph::network::udp
             void _handleConnectionHandshake(const asio::ip::udp::endpoint &from, const PacketHeader &header,
                                             const std::vector<std::byte> &bytes);
 
-            void _sendAckPacket(const asio::ip::udp::endpoint &from, const PacketHeader &header,
-                                const std::vector<std::byte> &bytes);
+            void _sendAckPacket(const asio::ip::udp::endpoint &from, const PacketHeader &header);
 
         //////////////////////--------------------------/////////////////////////
 

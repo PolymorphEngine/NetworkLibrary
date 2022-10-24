@@ -51,7 +51,8 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 endif ()
 
-# if(WIN32)
-#    # MSVC
-#    target_compile_options(PolymorphNetwork PRIVATE /Wall)
-# endif()
+if(WIN32)
+    # MSVC
+    # /wd4100: unreferenced formal parameter (= unused parameter)
+    target_compile_options(PolymorphNetwork PRIVATE /W4)
+endif()

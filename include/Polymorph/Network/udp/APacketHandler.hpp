@@ -79,7 +79,7 @@ namespace polymorph::network::udp
             /**
              * @copydetails IPacketHandler::packetReceived
              */
-            void packetReceived(asio::ip::udp::endpoint from, const std::vector<std::byte> &bytes) override final;
+            void packetReceived(const asio::ip::udp::endpoint& from, const std::vector<std::byte> &bytes) override final;
 
             /**
              * @copydetails IPacketHandler::getPreparedSocket
@@ -136,7 +136,7 @@ namespace polymorph::network::udp
             /**
              * @brief call a callback registered for the packet id and remove it
              */
-            void _callAndPopSendCallback(asio::ip::udp::endpoint to, const PacketHeader &header, const std::vector<std::byte> &bytes);
+            void _callAndPopSendCallback(const asio::ip::udp::endpoint& to, const PacketHeader &header, const std::vector<std::byte> &bytes);
 
         private:
             /**
