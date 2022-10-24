@@ -64,13 +64,6 @@ void polymorph::network::udp::APacketHandler::setConnector(std::shared_ptr<Conne
     _connector = std::move(connector);
 }
 
-void
-polymorph::network::udp::APacketHandler::_addSendCallback(const asio::ip::udp::endpoint& to, polymorph::network::PacketId id,
-        std::function<void(const PacketHeader &, const std::vector<std::byte> &)> callback)
-{
-    _sentCallbacks[std::make_pair(to, id)] = std::move(callback);
-}
-
 void polymorph::network::udp::APacketHandler::_callAndPopSendCallback(asio::ip::udp::endpoint to,
         const polymorph::network::PacketHeader &header, const std::vector<std::byte> &bytes)
 {
