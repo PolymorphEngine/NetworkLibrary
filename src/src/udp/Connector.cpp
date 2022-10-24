@@ -47,7 +47,7 @@ void polymorph::network::udp::Connector::_doReceive()
 void polymorph::network::udp::Connector::_doSend()
 {
     _socket.async_send_to(asio::buffer(_sendQueue.front().second), _sendQueue.front().first,
-       [this](const asio::error_code &error, std::size_t bytesSent) {
+       [this](const asio::error_code &error, std::size_t) {
            if (error) {
                std::cerr << "Error while sending packet: " << error.message() << std::endl;
                return;

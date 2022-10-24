@@ -29,9 +29,9 @@ polymorph::network::udp::APacketHandler::~APacketHandler()
     _thread.join();
 }
 
-void polymorph::network::udp::APacketHandler::packetReceived(asio::ip::udp::endpoint from, const std::vector<std::byte> &bytes)
+void polymorph::network::udp::APacketHandler::packetReceived(const asio::ip::udp::endpoint& from, const std::vector<std::byte> &bytes)
 {
-    PacketHeader header{0};
+    PacketHeader header {0};
 
     try {
         header = SerializerTrait<PacketHeader>::deserialize(bytes);
@@ -65,7 +65,7 @@ void polymorph::network::udp::APacketHandler::setConnector(std::shared_ptr<Conne
     _connector = std::move(connector);
 }
 
-void polymorph::network::udp::APacketHandler::_callAndPopSendCallback(asio::ip::udp::endpoint to,
+void polymorph::network::udp::APacketHandler::_callAndPopSendCallback(const asio::ip::udp::endpoint& to,
         const polymorph::network::PacketHeader &header, const std::vector<std::byte> &bytes)
 {
     auto it = _sentCallbacks.find(std::make_pair(to, header.pId));

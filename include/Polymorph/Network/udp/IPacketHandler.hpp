@@ -26,21 +26,21 @@ namespace polymorph::network::udp
              * @param from The endpoint of the client who sent the packet
              * @param bytes The packet received in its serialized form
              */
-            virtual void packetReceived(asio::ip::udp::endpoint from, const std::vector<std::byte> &bytes) = 0;
+            virtual void packetReceived(const asio::ip::udp::endpoint& from, const std::vector<std::byte> &bytes) = 0;
 
             /**
              * @brief Handle a received ack packet
              * @param from The endpoint of the client who sent the packet
              * @param acknoledgedId The id of the packet that has been acknoledged
              */
-            virtual void ackReceived(asio::ip::udp::endpoint from, PacketId acknoledgedId) = 0;
+            virtual void ackReceived(const asio::ip::udp::endpoint& from, PacketId acknoledgedId) = 0;
 
             /**
              * @brief Handle a sent packet
              * @param to The endpoint of the client who received the packet
              * @param bytes The packet sent in its serialized form
              */
-            virtual void packetSent(asio::ip::udp::endpoint to, PacketHeader &header, const std::vector<std::byte> &bytes) = 0;
+            virtual void packetSent(const asio::ip::udp::endpoint& to, PacketHeader &header, const std::vector<std::byte> &bytes) = 0;
 
             /**
              * @brief Get a reference to the socket tu use to send and receive packets
