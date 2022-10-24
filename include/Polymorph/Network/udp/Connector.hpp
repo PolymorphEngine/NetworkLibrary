@@ -43,9 +43,9 @@ namespace polymorph::network::udp {
 
         private:
             /**
-             * @property The vector containing the packets waiting to be sent
+             * @property The vector containing the data to be sent with it's corresponding endpoint
              */
-            std::queue<std::vector<std::byte>> _sendQueue;
+            std::queue<std::pair<asio::ip::udp::endpoint, std::vector<std::byte>>> _sendQueue;
 
             /**
              * @property An array containing the data received that need to be processed
@@ -79,7 +79,7 @@ namespace polymorph::network::udp {
              * @param to The endpoint of the client to send the packet to
              * @param data The packet to send
              */
-            void send(asio::ip::udp::endpoint to, const std::vector<std::byte> &data);
+            void send(const asio::ip::udp::endpoint& to, const std::vector<std::byte> &data);
 
             /**
              * @brief Start the receive and run the io_context

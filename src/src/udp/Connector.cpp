@@ -13,10 +13,10 @@ polymorph::network::udp::Connector::Connector(polymorph::network::udp::IPacketHa
     : _packetHandler(handler), _socket(handler.getPreparedSocket()), _receiveBuffer(), _writeInProgress(false)
 {}
 
-void polymorph::network::udp::Connector::send(asio::ip::udp::endpoint to,
+void polymorph::network::udp::Connector::send(const asio::ip::udp::endpoint& to,
                                               const std::vector<std::byte> &data)
 {
-    _sendQueue.push(data);
+    _sendQueue.emplace(to, data);
     if (!_writeInProgress) {
         _writeInProgress = true;
         _doSend();
@@ -45,7 +45,7 @@ void polymorph::network::udp::Connector::_doReceive()
 
 void polymorph::network::udp::Connector::_doSend()
 {
-    _socket.async_send(asio::buffer(_sendQueue.front()),
+    _socket.async_send_to(asio::buffer(_sendQueue.front().second), _sendQueue.front().first,
        [this](const asio::error_code &error, std::size_t bytesSent) {
            if (error) {
                std::cerr << "Error while sending packet: " << error.message() << std::endl;
@@ -62,7 +62,7 @@ void polymorph::network::udp::Connector::_doSend()
 
 void polymorph::network::udp::Connector::_determinePacket(const std::vector<std::byte> &data)
 {
-    PacketHeader header{0};
+    PacketHeader header {0};
 
     try {
         header = SerializerTrait<PacketHeader>::deserialize(data);
