@@ -12,8 +12,8 @@
 
 
 polymorph::network::udp::PacketStore::PacketStore(asio::io_context &context, std::map<OpId, bool> safeties,
-        std::chrono::milliseconds timeout, std::uint8_t maxRetries, std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback)
-    : _context(context), _safeties(std::move(safeties)), _timeout(timeout), _maxRetries(maxRetries), _resendCallback(std::move(resendCallback))
+        std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback)
+    : _context(context), _safeties(std::move(safeties)), _resendCallback(std::move(resendCallback))
 {
 }
 

@@ -21,9 +21,8 @@ namespace polymorph::network::udp
         ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            ServerPacketManager(asio::io_context& io_context, std::map<OpId, bool>& safeties, std::chrono::milliseconds& timeout,
-                                uint8_t maxRetries, std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback)
-                    : _io_context(io_context), _safeties(safeties), _timeout(timeout), _maxRetries(maxRetries), _resendCallback(std::move(resendCallback))
+            ServerPacketManager(asio::io_context& io_context, std::map<OpId, bool>& safeties, std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback)
+                    : _io_context(io_context), _safeties(safeties), _resendCallback(std::move(resendCallback))
             {};
 
             ~ServerPacketManager() = default;
@@ -48,10 +47,8 @@ namespace polymorph::network::udp
 
             asio::io_context& _io_context;
             std::map<OpId, bool>& _safeties;
-            std::chrono::milliseconds& _timeout;
             std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> _resendCallback;
 
-            uint8_t _maxRetries;
 
             /**
              * @brief The endpoint to which the packet should be sent
