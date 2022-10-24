@@ -264,7 +264,7 @@ TEST(udpE2E, ServerSendCallback)
 
     // Client Infos
     SessionId id;
-    bool connected;
+    bool connected = false;
 
     client.connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
@@ -276,7 +276,6 @@ TEST(udpE2E, ServerSendCallback)
     server.sendTo<std::uint16_t>(2, input_data, id, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
         passed = true;
     });
-    // server.sendTo(2, input_data, id); NOT WORKING LA PTN DE SA
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_data, output_data);
     ASSERT_TRUE(passed);

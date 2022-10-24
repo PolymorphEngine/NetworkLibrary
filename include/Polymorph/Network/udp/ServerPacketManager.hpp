@@ -10,6 +10,7 @@
 #include <asio/ip/udp.hpp>
 #include <map>
 #include <asio/steady_timer.hpp>
+#include <utility>
 #include "Polymorph/Network/types.hpp"
 
 namespace polymorph::network::udp
@@ -21,8 +22,8 @@ namespace polymorph::network::udp
         ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            ServerPacketManager(asio::io_context& io_context, std::map<OpId, bool>& safeties, std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback)
-                    : _io_context(io_context), _safeties(safeties), _resendCallback(std::move(resendCallback))
+            ServerPacketManager(asio::io_context& io_context, std::map<OpId, bool> safeties, std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback)
+                    : _io_context(io_context), _safeties(std::move(safeties)), _resendCallback(std::move(resendCallback))
             {};
 
             ~ServerPacketManager() = default;
@@ -65,7 +66,7 @@ namespace polymorph::network::udp
             /**
              * @property Map of OpId to bool, if the bool is true, the packet will be sent again if not acknowledged
              */
-            std::map<OpId, bool>& _safeties;
+            std::map<OpId, bool> _safeties;
 
             /**
              * @property Callback called when a packet needs to be resent

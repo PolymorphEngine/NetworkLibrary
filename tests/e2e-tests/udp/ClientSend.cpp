@@ -85,7 +85,7 @@ TEST(udpE2E, ClientSendCallback)
 
     // Client Infos
     SessionId id;
-    bool connected;
+    bool connected = false;
 
     client.connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
