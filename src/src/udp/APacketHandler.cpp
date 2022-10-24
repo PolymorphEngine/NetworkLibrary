@@ -10,9 +10,8 @@
 #include <iostream>
 #include "Polymorph/Network/udp/APacketHandler.hpp"
 
-polymorph::network::udp::APacketHandler::APacketHandler(
-        std::map<OpId, std::vector<std::function<void(const PacketHeader &, const std::vector<std::byte> &)>>> &callbacks,
-        asio::ip::udp::endpoint endpoint) : _context(), _socket(_context, endpoint), _receiveCallbacks(std::move(callbacks))
+polymorph::network::udp::APacketHandler::APacketHandler(asio::ip::udp::endpoint endpoint)
+    : _context(), _socket(_context, endpoint)
 {
     if (_receiveCallbacks.contains(0)) {
         std::cerr << "OpId 0 is reserved for internal use" << std::endl;

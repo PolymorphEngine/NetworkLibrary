@@ -26,9 +26,9 @@ namespace polymorph::network::udp
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            APacketHandler(std::map<OpId, std::vector<std::function<void(const PacketHeader &, const std::vector<std::byte> &)>>> &callbacks, asio::ip::udp::endpoint endpoint);
+            APacketHandler(asio::ip::udp::endpoint endpoint);
 
-            ~APacketHandler();
+            ~APacketHandler() override;
 
 
 //////////////////////--------------------------/////////////////////////
