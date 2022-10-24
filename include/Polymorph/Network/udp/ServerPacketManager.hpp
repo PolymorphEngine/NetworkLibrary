@@ -38,7 +38,7 @@ namespace polymorph::network::udp
 
 
         private:
-            std::map<asio::ip::udp::endpoint, PacketStore> _packetStores;
+            std::map<asio::ip::udp::endpoint, std::unique_ptr<PacketStore>> _packetStores;
             std::map<asio::ip::udp::endpoint, PacketId> _currentPacketIds;
 
             std::mutex _clientsStoresMutex;

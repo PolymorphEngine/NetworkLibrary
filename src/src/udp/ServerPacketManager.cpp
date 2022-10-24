@@ -21,8 +21,7 @@ bool polymorph::network::udp::ServerPacketManager::registerClient(const asio::ip
 
     std::lock_guard<std::mutex> lock(_clientsStoresMutex);
 
-    // TODO: fix this
-    return _packetStores.emplace(endpoint, PacketStore(_io_context, _safeties, _timeout, _maxRetries, _resendCallback)).second;
+    return _packetStores.emplace(endpoint, std::make_unique<PacketStore>(_io_context, _safeties, _timeout, _maxRetries, _resendCallback)).second;
 }
 
 bool polymorph::network::udp::ServerPacketManager::removeClient(
@@ -39,7 +38,7 @@ polymorph::network::udp::PacketStore&
 polymorph::network::udp::ServerPacketManager::storeOf(const asio::ip::udp::endpoint &endpoint)
 {
     std::lock_guard<std::mutex> lock(_clientsStoresMutex);
-    return _packetStores.at(endpoint);
+    return *_packetStores.at(endpoint);
 }
 
 polymorph::network::PacketId
