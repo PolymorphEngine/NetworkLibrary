@@ -50,6 +50,8 @@ namespace polymorph::network::udp
              */
             SessionStore _sessionStore;
 
+            std::map<OpId, bool> _safeties;
+
 
         //////////////////////--------------------------/////////////////////////
 
@@ -85,7 +87,11 @@ namespace polymorph::network::udp
         {
             auto endpoint = _sessionStore.udpEndpointOf(sessionId);
             PacketId id = _packetManager.packetIdOf(endpoint);
-            Packet<T> packet(opId, sessionId, id, std::forward<T>(data));
+            Packet<T> packet;
+            packet.header.pId = id;
+            packet.header.opId = opId;
+            packet.header.sId = sessionId;
+            packet.payload = data;
             std::vector<std::byte> sPacket = SerializerTrait<Packet<T>>::serialize(packet);
             _packetManager.storeOf(endpoint).addToSendList(packet.header, sPacket);
             if (callback)
@@ -110,9 +116,16 @@ namespace polymorph::network::udp
             }
         }
 
+            void _onPacketReceived(const asio::ip::udp::endpoint &from, const PacketHeader &header,
+                                   const std::vector<std::byte> &bytes) override;
 
-    private:
 
+        private:
+            void _handleConnectionHandshake(const asio::ip::udp::endpoint &from, const PacketHeader &header,
+                                            const std::vector<std::byte> &bytes);
+
+            void _sendAckPacket(const asio::ip::udp::endpoint &from, const PacketHeader &header,
+                                const std::vector<std::byte> &bytes);
 
         //////////////////////--------------------------/////////////////////////
 
