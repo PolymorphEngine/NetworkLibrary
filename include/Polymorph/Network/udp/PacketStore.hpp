@@ -10,6 +10,7 @@
 
 #include <asio/io_context.hpp>
 #include <map>
+#include <mutex>
 #include <asio/ip/udp.hpp>
 
 #include "Polymorph/Network/types.hpp"

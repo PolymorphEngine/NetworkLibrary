@@ -27,7 +27,8 @@ polymorph::network::udp::Server::Server(std::uint16_t port, std::map<OpId, bool>
             }),
             _safeties(std::move(safeties))
 {
-
+    _safeties[0] = true;
+    _safeties[1] = false;
 }
 
 void polymorph::network::udp::Server::ackReceived(const asio::ip::udp::endpoint &from,
@@ -42,12 +43,13 @@ void polymorph::network::udp::Server::ackReceived(const asio::ip::udp::endpoint 
 
 void polymorph::network::udp::Server::packetSent(const asio::ip::udp::endpoint &to,
                                                  const polymorph::network::PacketHeader &header,
-                                                 const std::vector<std::byte>&)
+                                                 const std::vector<std::byte>&bytes)
 {
     if (!_packetManager.hasClient(to)) {
         std::cerr << "Sent packet to unknown client!" << std::endl;
         return;
     }
+    _callAndPopSendCallback(to, header, bytes);
     _packetManager.storeOf(to).confirmSent(to, header.pId);
 }
 
@@ -55,7 +57,7 @@ void polymorph::network::udp::Server::_onPacketReceived(const asio::ip::udp::end
                                                         const polymorph::network::PacketHeader &header,
                                                         const std::vector<std::byte> &bytes)
 {
-    if (header.opId != ConnectionDto::opId)
+    if (header.opId == ConnectionDto::opId)
         _handleConnectionHandshake(from, header, bytes);
     if (_safeties.contains(header.opId) && _safeties.at(header.opId))
         _sendAckPacket(from, header);
@@ -69,6 +71,10 @@ void polymorph::network::udp::Server::_handleConnectionHandshake(const asio::ip:
 
     if (authorizationKey::areSame(packet.payload.authKey, authorizationKey::zero)) {
         auto sId = _sessionStore.registerClient(from);
+        if (!_packetManager.registerClient(from)) {
+            std::cerr << "Failed to register client!" << std::endl;
+            return;
+        }
         ConnectionResponseDto response{ .authorized = true};
         sendTo<ConnectionResponseDto>(ConnectionResponseDto::opId, response, sId);
         return;

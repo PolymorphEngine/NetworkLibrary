@@ -11,6 +11,7 @@
 #include "APacketHandler.hpp"
 #include "Polymorph/Network/udp/PacketStore.hpp"
 #include "Polymorph/Network/udp/Connector.hpp"
+#include "Polymorph/Network/dto/ACKDto.hpp"
 
 namespace polymorph::network::udp
 {
@@ -42,6 +43,7 @@ namespace polymorph::network::udp
             SessionId _currentSession = 0;
             std::map<OpId, bool> _safeties;
             std::atomic<bool> _isConnected = false;
+            std::atomic<bool> _isConnecting = true;
 
 
 //////////////////////--------------------------/////////////////////////
@@ -53,7 +55,7 @@ namespace polymorph::network::udp
             template<typename T>
             void send(OpId opId, T &payload, std::function<void(const PacketHeader &, const T &)> callback = nullptr)
             {
-                if (!_isConnected) {
+                if (!_isConnecting && !_isConnected && opId != ACKDto::opId) {
                     std::cerr << "Trying to send a packet before client is connected" << std::endl;
                     return;
                 }
@@ -72,8 +74,7 @@ namespace polymorph::network::udp
 
             void ackReceived(const asio::ip::udp::endpoint& from, PacketId acknoledgedId) override;
 
-            void
-            packetSent(const asio::ip::udp::endpoint& to, PacketHeader &header, const std::vector<std::byte> &bytes) override;
+            void packetSent(const asio::ip::udp::endpoint& to, const PacketHeader &header, const std::vector<std::byte> &bytes) override;
 
             void connect(std::function<void(bool, SessionId session)> callback);
 
