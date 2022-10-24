@@ -25,7 +25,7 @@ namespace polymorph::network::udp
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            PacketStore(asio::io_context &context, std::map<OpId, bool> safeties, std::chrono::milliseconds timeout, std::uint8_t maxRetries, std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback);
+            PacketStore(asio::io_context &context, std::map<OpId, bool> safeties, std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback);
 
 
             ~PacketStore() = default;
@@ -69,12 +69,12 @@ namespace polymorph::network::udp
             /**
              * @property The timeout after which a packet is considered lost
              */
-            std::chrono::milliseconds _timeout;
+            std::chrono::milliseconds _timeout = DEFAULT_UDP_TIMEOUT;
 
             /**
              * @property The maximum number of retries before a packet is considered definitely lost
              */
-            std::uint8_t _maxRetries;
+            std::uint8_t _maxRetries = DEFAULT_UDP_RETRIES;
 
             /**
              * @property Mutex to protect the _safeSent vector

@@ -23,4 +23,8 @@ namespace polymorph::network
 
     using AuthorizationKey = std::array<std::uint8_t, 16>;
 
+    constexpr std::chrono::milliseconds DEFAULT_UDP_TIMEOUT = std::chrono::milliseconds(300);
+
+    constexpr std::uint8_t DEFAULT_UDP_RETRIES = 10;
+
 }
