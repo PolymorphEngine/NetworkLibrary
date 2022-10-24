@@ -17,7 +17,7 @@ list(REMOVE_ITEM SRCS src/main.cpp)
 file(GLOB_RECURSE ICLS include/*.hpp)
 file(GLOB_RECURSE PRIV_ICLS src/include/*.hpp)
 
-add_library(PolymorphNetwork SHARED ${SRCS} ${ICLS} ${PRIV_ICLS})
+add_library(PolymorphNetwork ${SRCS} ${ICLS} ${PRIV_ICLS})
 
 target_include_directories(PolymorphNetwork PUBLIC
         include
@@ -50,3 +50,8 @@ if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 endif ()
+
+# if(WIN32)
+#    # MSVC
+#    target_compile_options(PolymorphNetwork PRIVATE /Wall)
+# endif()
