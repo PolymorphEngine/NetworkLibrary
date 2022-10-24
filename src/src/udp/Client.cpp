@@ -18,6 +18,7 @@ polymorph::network::udp::Client::Client(std::string host, std::uint16_t port, st
     APacketHandler(asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)),
     _packetStore(_context, safeties,
         [this](const std::vector<std::byte> &sPacket, const asio::ip::udp::endpoint &recipient) {
+            std::cerr << "Resending lost packet" << std::endl;
             _socket.async_send_to(asio::buffer(sPacket), recipient,
                     [recipient](const asio::error_code &error, std::size_t) {
                         if (error) {
@@ -29,7 +30,8 @@ polymorph::network::udp::Client::Client(std::string host, std::uint16_t port, st
         }),
     _safeties(std::move(safeties))
 {
-
+    _safeties[0] = true;
+    _safeties[1] = false;
 }
 
 void polymorph::network::udp::Client::ackReceived(const asio::ip::udp::endpoint&, polymorph::network::PacketId acknoledgedId)
@@ -37,7 +39,7 @@ void polymorph::network::udp::Client::ackReceived(const asio::ip::udp::endpoint&
     _packetStore.confirmReceived(acknoledgedId);
 }
 
-void polymorph::network::udp::Client::packetSent(const asio::ip::udp::endpoint& to, polymorph::network::PacketHeader &header,
+void polymorph::network::udp::Client::packetSent(const asio::ip::udp::endpoint& to, const polymorph::network::PacketHeader &header,
                                                  const std::vector<std::byte> &bytes)
 {
     _packetStore.confirmSent(to, header.pId);
@@ -48,6 +50,7 @@ void polymorph::network::udp::Client::connect(std::function<void(bool, SessionId
 {
     ConnectionDto dto{ 0, 0};
     send<ConnectionDto>(ConnectionDto::opId, dto);
+    _isConnecting = false;
 
     registerReceiveHandler<ConnectionResponseDto>(ConnectionResponseDto::opId, [this, callback](const PacketHeader &header, const ConnectionResponseDto &payload) {
         _isConnected = payload.authorized;
@@ -60,6 +63,7 @@ void polymorph::network::udp::Client::connectWithSession(polymorph::network::Ses
 {
     ConnectionDto dto{ .sessionId = session, .authKey = authKey };
     send<ConnectionDto>(ConnectionDto::opId, dto);
+    _isConnecting = false;
 
     registerReceiveHandler<ConnectionResponseDto>(ConnectionResponseDto::opId, [this, callback](const PacketHeader &header, const ConnectionResponseDto &payload) {
         _isConnected = payload.authorized;

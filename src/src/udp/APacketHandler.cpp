@@ -26,7 +26,9 @@ polymorph::network::udp::APacketHandler::APacketHandler(asio::ip::udp::endpoint 
 polymorph::network::udp::APacketHandler::~APacketHandler()
 {
     _context.stop();
-    _thread.join();
+    if (_thread.joinable()) {
+        _thread.join();
+    }
 }
 
 void polymorph::network::udp::APacketHandler::packetReceived(const asio::ip::udp::endpoint& from, const std::vector<std::byte> &bytes)

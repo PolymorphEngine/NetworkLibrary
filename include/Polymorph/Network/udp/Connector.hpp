@@ -67,6 +67,10 @@ namespace polymorph::network::udp {
              */
             std::atomic<bool> _writeInProgress;
 
+            std::mutex _sendQueueMutex;
+
+            asio::ip::udp::endpoint _endpoint;
+
 
     //////////////////////--------------------------/////////////////////////
 

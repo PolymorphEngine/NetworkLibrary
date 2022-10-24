@@ -72,7 +72,7 @@ namespace polymorph::network::udp
          * @param header the header of the packet
          * @param data The packet in its serialized form
          */
-        void packetSent(const asio::ip::udp::endpoint& to, const PacketHeader& header, const std::vector<std::byte>& data);
+        void packetSent(const asio::ip::udp::endpoint& to, const PacketHeader &header, const std::vector<std::byte> &bytes) override;
 
         /**
          * @brief Send a packet to the client with the specified session id

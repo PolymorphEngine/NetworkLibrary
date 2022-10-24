@@ -15,6 +15,13 @@ polymorph::network::udp::PacketStore::PacketStore(asio::io_context &context, std
         std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback)
     : _context(context), _safeties(std::move(safeties)), _resendCallback(std::move(resendCallback))
 {
+    if (_safeties.contains(0))
+        std::cerr << "OpId 0 is reserved for internal use" << std::endl;
+    if (_safeties.contains(1))
+        std::cerr << "OpId 1 is reserved for internal use" << std::endl;
+
+    _safeties[0] = true;
+    _safeties[1] = false;
 }
 
 void polymorph::network::udp::PacketStore::addToSendList(polymorph::network::PacketHeader header,

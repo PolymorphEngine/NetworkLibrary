@@ -40,7 +40,7 @@ namespace polymorph::network::udp
              * @param to The endpoint of the client who received the packet
              * @param bytes The packet sent in its serialized form
              */
-            virtual void packetSent(const asio::ip::udp::endpoint& to, PacketHeader &header, const std::vector<std::byte> &bytes) = 0;
+            virtual void packetSent(const asio::ip::udp::endpoint& to, const PacketHeader &header, const std::vector<std::byte> &bytes) = 0;
 
             /**
              * @brief Get a reference to the socket tu use to send and receive packets
