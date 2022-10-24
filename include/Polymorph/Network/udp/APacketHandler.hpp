@@ -119,6 +119,8 @@ namespace polymorph::network::udp
             void setConnector(std::shared_ptr<Connector> connector);
 
         protected:
+            virtual void _onPacketReceived(const asio::ip::udp::endpoint &from, const PacketHeader &header, const std::vector<std::byte> &bytes) = 0;
+
             /**
              * @brief add a callback to call when a packet with a specific packet id is sent
              */

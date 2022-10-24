@@ -8,6 +8,7 @@
 #include <iostream>
 #include "Polymorph/Network/udp/Connector.hpp"
 #include "Polymorph/Network/SerializerTrait.hpp"
+#include "Polymorph/Network/dto/ACKDto.hpp"
 
 polymorph::network::udp::Connector::Connector(polymorph::network::udp::IPacketHandler &handler)
     : _packetHandler(handler), _socket(handler.getPreparedSocket()), _receiveBuffer(), _writeInProgress(false)
@@ -71,7 +72,7 @@ void polymorph::network::udp::Connector::_determinePacket(const std::vector<std:
         return;
     }
 
-    if (header.opId == 1) {
+    if (header.opId == ACKDto::opId) {
         _packetHandler.packetReceived(_socket.remote_endpoint(), data);
     } else {
         _packetHandler.ackReceived(_socket.remote_endpoint(), header.pId);

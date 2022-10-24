@@ -13,6 +13,8 @@ namespace polymorph::network
 {
     namespace authorizationKey
     {
+        static AuthorizationKey zero{0};
+
         /**
          * @brief Generate a random authorization key
          * @return The generated key
