@@ -122,7 +122,14 @@ namespace polymorph::network::udp
             /**
              * @brief add a callback to call when a packet with a specific packet id is sent
              */
-            void _addSendCallback(const asio::ip::udp::endpoint& to, PacketId id, std::function<void(const PacketHeader &, const std::vector<std::byte> &)> callback);
+            template<typename T>
+            void _addSendCallback(const asio::ip::udp::endpoint& to, PacketId id, std::function<void(const PacketHeader &, const T &)> callback)
+            {
+                _sentCallbacks[std::make_pair(to, id)] = [callback](const PacketHeader &header, const std::vector<std::byte> &bytes) {
+                    Packet<T> packet = SerializerTrait<Packet<T>>::deserialize(bytes);
+                    callback(header, packet.payload);
+                };
+            };
 
             /**
              * @brief call a callback registered for the packet id and remove it
