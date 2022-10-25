@@ -70,10 +70,10 @@ namespace polymorph::network::tcp
                 packet.header.sId = sessionId;
                 packet.payload = data;
                 auto serialized = SerializerTrait<Packet<T>>::serialize(packet);
-                connection->send(serialized, [callback](const PacketHeader &header, const std::vector<std::uint8_t> &data) {
+                connection->send(serialized, [callback](const PacketHeader &header, const std::vector<std::byte> &data) {
                     if (callback != nullptr) {
-                        auto deserialized = SerializerTrait<T>::deserialize(data);
-                        callback(header, deserialized);
+                        auto deserialized = SerializerTrait<Packet<T>>::deserialize(data);
+                        callback(header, deserialized.payload);
                     }
                 });
             }

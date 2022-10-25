@@ -15,7 +15,7 @@
 #include "Polymorph/Network/exceptions/UnauthorizedException.hpp"
 
 
-polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, IConnectionPool &pool, IPacketHandler &packetHandler)
+polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, IConnectionPool &pool, Server &packetHandler)
         : _sessionAttributor(sessionStore), _connectionPool(pool), _packetHandler(packetHandler), _stopped(false), _connected(false), _writeInProgress(false), _socket(std::move(socket))
 {}
 
@@ -93,19 +93,20 @@ void polymorph::network::tcp::ClientConnection::_handleHandshakePacket(const Pac
     if (authorizationKey::areSame(packet.payload.authKey, authorizationKey::zero)) {
         _sessionId = _sessionAttributor.registerClient(_socket.remote_endpoint());
         ConnectionResponseDto response{ .authorized = true};
-        // TODO change _packetHandler type to Server and call sendTo
+        _packetHandler.sendTo(ConnectionResponseDto::opId, response, _sessionId);
         return;
     }
 
     try {
         _sessionAttributor.registerAuthoredClient(_socket.remote_endpoint(), packet.payload.sessionId, packet.payload.authKey);
+        _sessionId = packet.payload.sessionId;
         ConnectionResponseDto response{ .authorized = true};
-        // TODO change _packetHandler type to Server and call sendTo
+        _packetHandler.sendTo(ConnectionResponseDto::opId, response, _sessionId);
     } catch(const exceptions::UnauthorizedException &e) {
         std::cerr << "Error while registering client: " << e.what() << std::endl;
         _sessionId = _sessionAttributor.registerClient(_socket.remote_endpoint());
         ConnectionResponseDto response{ .authorized = false};
-        // TODO change _packetHandler type to Server and call sendTo
+        _packetHandler.sendTo(ConnectionResponseDto::opId, response, _sessionId);
     }
 }
 

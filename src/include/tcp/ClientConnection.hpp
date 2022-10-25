@@ -15,17 +15,18 @@
 #include "Polymorph/Network/PacketHeader.hpp"
 #include "Polymorph/Network/tcp/IConnectionPool.hpp"
 #include "Polymorph/Network/tcp/IPacketHandler.hpp"
+#include "Polymorph/Network/tcp/Server.hpp"
 
 namespace polymorph::network::tcp
 {
 
-    class ClientConnection : public std::enable_shared_from_this<ClientConnection>
+    class ClientConnection : public std::enable_shared_from_this<ClientConnection>, public IClientConnection
     {
 
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, IConnectionPool &pool, IPacketHandler &packetHandler);
+            ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, IConnectionPool &pool, Server &packetHandler);
 
             ~ClientConnection() = default;
 
@@ -41,7 +42,7 @@ namespace polymorph::network::tcp
         private:
             SessionStore &_sessionAttributor;
             IConnectionPool &_connectionPool;
-            IPacketHandler &_packetHandler;
+            Server &_packetHandler;
 
             std::atomic<bool> _stopped;
 
