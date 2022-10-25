@@ -47,7 +47,7 @@ TEST(udpE2E, ClientSend)
         id = sId;
     });
 
-    PNL_WAIT_COND_LOOP(!connected, 5, PNL_TIME_OUT)
+    PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
     client.send(2, input_data);
     PNL_WAIT(PNL_TIME_OUT)
@@ -92,7 +92,7 @@ TEST(udpE2E, ClientSendCallback)
         id = sId;
     });
 
-    PNL_WAIT_COND_LOOP(!connected, 5, PNL_TIME_OUT)
+    PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
     client.send<std::uint16_t>(2, input_data, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
         passed = true;
@@ -102,3 +102,41 @@ TEST(udpE2E, ClientSendCallback)
     ASSERT_EQ(input_data, output_data);
     ASSERT_TRUE(passed);
 }
+
+#ifdef PNL_CLIENT_TEST
+#if PNL_CLIENT_TEST == 1
+TEST(udpE2E, SafetyClientSend)
+{
+    //checks
+    std::uint32_t input_data = 4294967295;
+    std::uint32_t output_data = 0;
+
+    using namespace polymorph::network;
+    using namespace polymorph::network::udp;
+    std::map<OpId, bool> safeties = {
+            { 2, false }
+    };
+
+    // Client Setup
+    Client client("127.0.0.1", 4242, safeties);
+    auto clientConnector = std::make_shared<Connector>(client);
+    client.setConnector(clientConnector);
+    clientConnector->start();
+
+    // Client Infos
+    SessionId id;
+    bool connected = false;
+
+    client.connect([&id, &connected](bool authorized, SessionId sId) {
+        connected = authorized;
+        id = sId;
+    });
+
+    PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
+    ASSERT_TRUE(connected);
+    client.send(2, input_data);
+    PNL_WAIT_COND(input_data != output_data, PNL_TIME_OUT)
+    ASSERT_EQ(input_data, output_data);
+}
+#endif
+#endif

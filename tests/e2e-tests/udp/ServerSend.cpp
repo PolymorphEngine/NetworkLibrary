@@ -47,7 +47,7 @@ TEST(udpE2E, ServerSend)
         id = sId;
     });
 
-    PNL_WAIT_COND_LOOP(!connected, 5, PNL_TIME_OUT)
+    PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
     server.send(2, input_data);
     // server.sendTo(2, input_data, id); NOT WORKING LA PTN DE SA
@@ -97,7 +97,7 @@ TEST(udpE2E, OpIdDispatchServerSend)
         id = sId;
     });
 
-    PNL_WAIT_COND_LOOP(!connected, 5, PNL_TIME_OUT)
+    PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
     server.send(3, input_char);
     server.send(2, input_data);
@@ -161,7 +161,7 @@ TEST(udpE2E, ServerDispatchToAllClients)
         id2 = sId;
     });
 
-    PNL_WAIT_COND_LOOP(!connected1 || !connected2, 5, PNL_TIME_OUT)
+    PNL_WAIT_COND_LOOP(!connected1 || !connected2, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected1);
     ASSERT_TRUE(connected2);
     server.send(2, checkPayload);
@@ -225,7 +225,7 @@ TEST(udpE2E, ServerSendOnlyOneClient)
         id2 = sId;
     });
 
-    PNL_WAIT_COND_LOOP(!connected1 || !connected2, 5, PNL_TIME_OUT)
+    PNL_WAIT_COND_LOOP(!connected1 || !connected2, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected1);
     ASSERT_TRUE(connected2);
     server.sendTo(2, checkPayload, id1);
@@ -271,7 +271,7 @@ TEST(udpE2E, ServerSendCallback)
         id = sId;
     });
 
-    PNL_WAIT_COND_LOOP(!connected, 5, PNL_TIME_OUT)
+    PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
     server.sendTo<std::uint16_t>(2, input_data, id, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
         passed = true;
@@ -280,3 +280,30 @@ TEST(udpE2E, ServerSendCallback)
     ASSERT_EQ(input_data, output_data);
     ASSERT_TRUE(passed);
 }
+
+#ifdef PNL_SERVER_TEST
+#if PNL_CLIENT_TEST == 1
+TEST(udpE2E, SafetyServerReceive)
+{
+    //checks
+    std::uint32_t output_data = 0;
+
+    using namespace polymorph::network;
+    using namespace polymorph::network::udp;
+    std::map<OpId, bool> safeties = {
+            { 2, false }
+    };
+
+    // Server Setup
+    Server server(4242, safeties);
+    auto serverConnector = std::make_shared<Connector>(server);
+    server.setConnector(serverConnector);
+    serverConnector->start();
+
+    server.registerReceiveHandler<std::uint32_t>(2, [&output_data](const PacketHeader &, const std::uint32_t &payload) {
+        output_data = payload;
+    });
+    PNL_WAIT_COND(output_data != 0, PNL_TIME_OUT)
+}
+#endif
+#endif

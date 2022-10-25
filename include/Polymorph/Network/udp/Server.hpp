@@ -87,7 +87,7 @@ namespace polymorph::network::udp
         {
             auto endpoint = _sessionStore.udpEndpointOf(sessionId);
             PacketId id = _packetManager.packetIdOf(endpoint);
-            Packet<T> packet;
+            Packet<T> packet = {};
             packet.header.pId = id;
             packet.header.opId = opId;
             packet.header.sId = sessionId;

@@ -12,7 +12,7 @@
 
 
 polymorph::network::udp::PacketStore::PacketStore(asio::io_context &context, std::map<OpId, bool> safeties,
-        std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback)
+        std::function<void(std::shared_ptr<SafePacketManager>)> resendCallback)
     : _context(context), _safeties(std::move(safeties)), _resendCallback(std::move(resendCallback))
 {
     if (_safeties.contains(0))
@@ -74,8 +74,8 @@ polymorph::network::udp::PacketStore::_markAsAC(polymorph::network::PacketHeader
             this->confirmReceived(manager->header.pId);
             return;
         }
-        (weak.lock())->remainingRetries--;
-        this->_resendCallback((weak.lock())->sPacket, (weak.lock())->endpoint);
+        manager->remainingRetries--;
+        this->_resendCallback(manager);
     });
     _safeSent.push_back(std::move(manager));
 }

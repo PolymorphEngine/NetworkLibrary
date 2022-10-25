@@ -60,7 +60,7 @@ namespace polymorph::network::udp
                     return;
                 }
                 ++_currentPacketId;
-                Packet<T> packet;
+                Packet<T> packet = {};
                 packet.header.pId = _currentPacketId;
                 packet.header.opId = opId;
                 packet.header.sId = _currentSession;
