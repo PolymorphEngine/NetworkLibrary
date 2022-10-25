@@ -45,6 +45,8 @@ namespace polymorph::network::tcp
 
             std::atomic<bool> _stopped;
 
+            std::atomic<bool> _connected;
+
             std::queue<std::pair<std::vector<std::byte>, std::function<void (const PacketHeader &, const std::vector<std::byte> &)>>> _sendQueue;
             std::atomic<bool> _writeInProgress;
             std::mutex _sendQueueMutex;
@@ -65,6 +67,10 @@ namespace polymorph::network::tcp
             void start();
 
             void send(std::vector<std::byte> data, std::function<void (const PacketHeader &, const std::vector<std::byte> &)> callback = nullptr);
+
+            bool isConnected();
+
+            SessionId getSessionId();
 
         private:
             void _doSend();
