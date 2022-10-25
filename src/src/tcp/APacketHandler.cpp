@@ -10,11 +10,6 @@
 #include "Polymorph/Network/SerializerTrait.hpp"
 #include "Polymorph/Network/exceptions/DeserializingException.hpp"
 
-polymorph::network::tcp::APacketHandler::APacketHandler(asio::ip::tcp::endpoint endpoint)
-    : _context(), _socket(_context, endpoint)
-{
-}
-
 polymorph::network::tcp::APacketHandler::~APacketHandler()
 {
     _context.stop();

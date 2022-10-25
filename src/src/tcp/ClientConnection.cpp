@@ -140,3 +140,8 @@ polymorph::network::SessionId polymorph::network::tcp::ClientConnection::getSess
 {
     return _sessionId;
 }
+
+polymorph::network::PacketId polymorph::network::tcp::ClientConnection::getPacketId()
+{
+    return ++_packetId;
+}

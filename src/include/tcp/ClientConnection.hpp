@@ -55,7 +55,9 @@ namespace polymorph::network::tcp
             std::array<std::byte, 1024> _internalBuffer;
 
             asio::ip::tcp::socket _socket;
+
             SessionId _sessionId;
+            PacketId _packetId = 0;
 
 
 //////////////////////--------------------------/////////////////////////
@@ -71,6 +73,8 @@ namespace polymorph::network::tcp
             bool isConnected();
 
             SessionId getSessionId();
+
+            PacketId getPacketId();
 
         private:
             void _doSend();

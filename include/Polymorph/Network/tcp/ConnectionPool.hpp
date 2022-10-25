@@ -36,7 +36,7 @@ namespace polymorph::network::tcp
 
 
         private:
-            std::set<std::shared_ptr<ClientConnection>> _connections;
+            std::set<std::shared_ptr<IClientConnection>> _connections;
             std::mutex _connectionsMutex;
 
 
@@ -46,13 +46,13 @@ namespace polymorph::network::tcp
 
 /////////////////////////////// METHODS /////////////////////////////////
         public:
-            void join(std::shared_ptr<ClientConnection> connection) override;
+            void join(std::shared_ptr<IClientConnection> connection) override;
 
-            void leave(std::shared_ptr<ClientConnection> connection) override;
+            void leave(std::shared_ptr<IClientConnection> connection) override;
 
-            std::vector<std::shared_ptr<ClientConnection>> getConnections();
+            std::vector<std::shared_ptr<IClientConnection>> getConnections();
 
-            std::shared_ptr<ClientConnection> getConnectionBySessionId(SessionId id);
+            std::shared_ptr<IClientConnection> getConnectionBySessionId(SessionId id);
 
 
 

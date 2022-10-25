@@ -8,6 +8,7 @@
 #pragma once
 
 #include <memory>
+#include "Polymorph/Network/udp/IClientConnection.hpp"
 
 namespace polymorph::network::tcp {
     class ClientConnection;
@@ -17,9 +18,9 @@ namespace polymorph::network::tcp {
         public:
             virtual ~IConnectionPool() = default;
 
-            virtual void join(std::shared_ptr<ClientConnection> connection) = 0;
+            virtual void join(std::shared_ptr<IClientConnection> connection) = 0;
 
-            virtual void leave(std::shared_ptr<ClientConnection> connection) = 0;
+            virtual void leave(std::shared_ptr<IClientConnection> connection) = 0;
 
     };
 

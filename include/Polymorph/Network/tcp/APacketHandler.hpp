@@ -11,7 +11,7 @@
 #include <thread>
 #include <functional>
 #include <asio.hpp>
-#include "Polymorph/network/PacketHeader.hpp"
+#include "Polymorph/Network/PacketHeader.hpp"
 #include "Polymorph/Network/Packet.hpp"
 #include "Polymorph/Network/tcp/IPacketHandler.hpp"
 #include "Polymorph/Network/SerializerTrait.hpp"
@@ -24,9 +24,9 @@ namespace polymorph::network::tcp
     ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
     public:
-        APacketHandler(asio::ip::tcp::endpoint endpoint);
+        APacketHandler() = default;
 
-        ~APacketHandler();
+        ~APacketHandler() override;
 
 
     //////////////////////--------------------------/////////////////////////
@@ -44,7 +44,6 @@ namespace polymorph::network::tcp
 
     protected:
         asio::io_context _context;
-        asio::ip::tcp::socket _socket;
 
 
     //////////////////////--------------------------/////////////////////////
@@ -65,7 +64,6 @@ namespace polymorph::network::tcp
         }
         void unregisterReceiveHandlers(polymorph::network::OpId opId);
 
-    private:
         virtual void start() = 0;
 
     protected:
