@@ -16,13 +16,14 @@
 namespace polymorph::network::udp
 {
     class PacketStore;
+    class SafePacketManager;
 
     class ServerPacketManager {
 
         ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            ServerPacketManager(asio::io_context& io_context, std::map<OpId, bool> safeties, std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback)
+            ServerPacketManager(asio::io_context& io_context, std::map<OpId, bool> safeties, std::function<void(std::shared_ptr<SafePacketManager>)> resendCallback)
                     : _io_context(io_context), _safeties(std::move(safeties)), _resendCallback(std::move(resendCallback))
             {};
 
@@ -73,7 +74,7 @@ namespace polymorph::network::udp
              * @param data The data of the packet
              * @param endpoint The endpoint to which the packet needs to be resent
              */
-            std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> _resendCallback;
+            std::function<void(std::shared_ptr<SafePacketManager>)> _resendCallback;
 
             /**
              * @property The endpoint to which the packet should be sent

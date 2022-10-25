@@ -17,7 +17,7 @@ TEST(ServerPacketManagerTests, SimpleRegistering) {
     std::map<OpId, bool> mapping = {
         {1, true}
     };
-    auto clbk = [](std::vector<std::byte>, asio::ip::udp::endpoint) {};
+    auto clbk = [](std::shared_ptr<SafePacketManager>) {};
     ServerPacketManager store(context, mapping, clbk);
 
 
@@ -35,7 +35,7 @@ TEST(ServerPacketManagerTests, SimpleRegisterUnregister) {
     std::map<OpId, bool> mapping = {
             {1, true}
     };
-    auto clbk = [](std::vector<std::byte>, asio::ip::udp::endpoint) {};
+    auto clbk = [](std::shared_ptr<SafePacketManager>) {};
     ServerPacketManager store(context, mapping, clbk);
 
     asio::ip::udp::endpoint endpoint(asio::ip::make_address("127.0.0.1"), 4242);
@@ -53,7 +53,7 @@ TEST(ServerPacketManagerTests, AccessRegistedClientStore) {
     std::map<OpId, bool> mapping = {
             {1, true}
     };
-    auto clbk = [](std::vector<std::byte>, asio::ip::udp::endpoint) {};
+    auto clbk = [](std::shared_ptr<SafePacketManager>) {};
     ServerPacketManager store(context, mapping, clbk);
 
 
@@ -72,7 +72,7 @@ TEST(ServerPacketManagerTests, AccessStoreOfEmptyServerPacketManager) {
     std::map<OpId, bool> mapping = {
             {1, true}
     };
-    auto clbk = [](std::vector<std::byte>, asio::ip::udp::endpoint) {};
+    auto clbk = [](std::shared_ptr<SafePacketManager>) {};
     ServerPacketManager store(context, mapping, clbk);
 
 
@@ -90,7 +90,7 @@ TEST(ServerPacketManagerTests, AccessStoreOfRemovedClient) {
     std::map<OpId, bool> mapping = {
             {1, true}
     };
-    auto clbk = [](std::vector<std::byte>, asio::ip::udp::endpoint) {};
+    auto clbk = [](std::shared_ptr<SafePacketManager>) {};
     ServerPacketManager store(context, mapping, clbk);
 
     asio::ip::udp::endpoint endpoint(asio::ip::make_address("127.0.0.1"), 4242);
@@ -109,7 +109,7 @@ TEST(ServerPacketManagerTests, AutoIncrementPacketId) {
     std::map<OpId, bool> mapping = {
             {1, true}
     };
-    auto clbk = [](std::vector<std::byte>, asio::ip::udp::endpoint) {};
+    auto clbk = [](std::shared_ptr<SafePacketManager>) {};
     ServerPacketManager store(context, mapping, clbk);
 
     asio::ip::udp::endpoint endpoint(asio::ip::make_address("127.0.0.1"), 4242);

@@ -81,7 +81,8 @@ void polymorph::network::udp::Connector::_determinePacket(const std::vector<std:
     }
 
     if (header.opId == ACKDto::opId) {
-        _packetHandler.ackReceived(_endpoint, header.pId);
+        auto packet = SerializerTrait<Packet<ACKDto>>::deserialize(data);
+        _packetHandler.ackReceived(_endpoint, packet.payload.id);
     } else {
         _packetHandler.packetReceived(_endpoint, data);
     }

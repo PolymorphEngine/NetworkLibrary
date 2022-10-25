@@ -9,6 +9,7 @@
 #include "Polymorph/Network/udp/Server.hpp"
 #include "Polymorph/Network/dto/ConnectionDto.hpp"
 #include "authorizationKey.hpp"
+#include "udp/SafePacketManager.hpp"
 #include "Polymorph/Network/dto/ConnectionResponseDto.hpp"
 #include "Polymorph/Network/exceptions/UnauthorizedException.hpp"
 #include "Polymorph/Network/dto/ACKDto.hpp"
@@ -16,19 +17,20 @@
 polymorph::network::udp::Server::Server(std::uint16_t port, std::map<OpId, bool> safeties)
     : APacketHandler(asio::ip::udp::endpoint(asio::ip::udp::v4(), port)),
         _packetManager(_context, safeties,
-            [this](const std::vector<std::byte> &sPacket, const asio::ip::udp::endpoint &recipient) {
-                _socket.async_send_to(asio::buffer(sPacket), recipient,
-                    [recipient](const asio::error_code &error, std::size_t) {
-                        if (error) {
-                            std::cerr << "Error while sending packet: " << error.message() << std::endl;
-                            return;
-                        }
+            [this](std::shared_ptr<SafePacketManager> manager) {
+                _socket.async_send_to(asio::buffer(manager->sPacket), manager->endpoint,
+                      [manager](const asio::error_code &error, std::size_t) {
+                          if (error) {
+                              std::cerr << "Error while sending packet: " << error.message() << std::endl;
+                              return;
+                          }
                     });
-            }),
+                      }
+                ),
             _safeties(std::move(safeties))
 {
-    _safeties[0] = true;
-    _safeties[1] = false;
+    _safeties[ConnectionDto::opId] = true;
+    _safeties[ACKDto::opId] = false;
 }
 
 void polymorph::network::udp::Server::ackReceived(const asio::ip::udp::endpoint &from,

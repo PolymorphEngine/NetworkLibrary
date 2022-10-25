@@ -26,7 +26,7 @@ namespace polymorph::network::udp
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            PacketStore(asio::io_context &context, std::map<OpId, bool> safeties, std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> resendCallback);
+            PacketStore(asio::io_context &context, std::map<OpId, bool> safeties, std::function<void(std::shared_ptr<SafePacketManager>)> resendCallback);
 
 
             ~PacketStore() = default;
@@ -55,7 +55,7 @@ namespace polymorph::network::udp
             /**
              * @property The callback to call when a packet needs to be resent (timeout expired)
              */
-            std::function<void(std::vector<std::byte>, asio::ip::udp::endpoint)> _resendCallback;
+            std::function<void(std::shared_ptr<SafePacketManager>)> _resendCallback;
 
             /**
              * @property The mapping to know if a packet needs to be safe (have ack) or not

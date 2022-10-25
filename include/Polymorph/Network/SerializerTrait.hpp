@@ -68,7 +68,7 @@ namespace polymorph::network
 
             static Packet<T> deserialize(const std::vector<std::byte> &buffer)
             {
-                Packet<T> packet;
+                Packet<T> packet = {};
                 std::vector<std::byte> payloadBuffer;
 
                 if (buffer.size() < sizeof(PacketHeader))
