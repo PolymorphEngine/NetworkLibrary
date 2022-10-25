@@ -15,6 +15,8 @@ namespace polymorph::network::tcp {
     class IConnectionPool {
 
         public:
+            virtual ~IConnectionPool() = default;
+
             virtual void join(std::shared_ptr<ClientConnection> connection) = 0;
 
             virtual void leave(std::shared_ptr<ClientConnection> connection) = 0;

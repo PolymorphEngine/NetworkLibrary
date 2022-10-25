@@ -16,7 +16,7 @@
 
 
 polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, IConnectionPool &pool, IPacketHandler &packetHandler)
-        : _sessionAttributor(sessionStore), _connectionPool(pool), _packetHandler(packetHandler), _stopped(false), _writeInProgress(false), _socket(std::move(socket))
+        : _sessionAttributor(sessionStore), _connectionPool(pool), _packetHandler(packetHandler), _stopped(false), _connected(false), _writeInProgress(false), _socket(std::move(socket))
 {}
 
 void polymorph::network::tcp::ClientConnection::start()
@@ -129,4 +129,14 @@ bool polymorph::network::tcp::ClientConnection::_determinePacket(const polymorph
     } else {
         return _broadcastReceivedPacket(header, bytes);
     }
+}
+
+bool polymorph::network::tcp::ClientConnection::isConnected()
+{
+    return _connected;
+}
+
+polymorph::network::SessionId polymorph::network::tcp::ClientConnection::getSessionId()
+{
+    return _sessionId;
 }
