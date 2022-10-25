@@ -26,7 +26,7 @@ TEST(SerializerTrait, PacketHeader)
 
 TEST(SerializerTrait, Packet)
 {
-    polymorph::network::PacketHeader header;
+    polymorph::network::PacketHeader header {0};
     uint8_t payload = 42;
     polymorph::network::Packet<uint8_t> packet;
     packet.header = header;

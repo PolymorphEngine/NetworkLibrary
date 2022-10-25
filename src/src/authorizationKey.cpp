@@ -17,12 +17,11 @@ namespace polymorph::network::authorizationKey
         static std::random_device rd;
         static std::mt19937 gen(rd());
         static std::uniform_int_distribution<> dis(0, 255);
-        static AuthorizationKey zero{0};
         AuthorizationKey key{0};
 
         while (areSame(key, zero)) {
             for (auto &byte: key)
-                byte = dis(gen);
+                byte = static_cast<unsigned char>(dis(gen));
         }
         return key;
     }
