@@ -10,31 +10,32 @@
 #include "Polymorph/Network/tcp/ConnectionPool.hpp"
 #include "tcp/ClientConnection.hpp"
 
-void polymorph::network::tcp::ConnectionPool::join(std::shared_ptr<ClientConnection> connection)
+void polymorph::network::tcp::ConnectionPool::join(std::shared_ptr<IClientConnection> connection)
 {
     std::lock_guard<std::mutex> lock(_connectionsMutex);
 
     _connections.insert(connection);
 }
 
-void polymorph::network::tcp::ConnectionPool::leave(std::shared_ptr<ClientConnection> connection)
+void polymorph::network::tcp::ConnectionPool::leave(std::shared_ptr<IClientConnection> connection)
 {
     std::lock_guard<std::mutex> lock(_connectionsMutex);
 
     _connections.erase(connection);
 }
 
-std::vector<std::shared_ptr<polymorph::network::tcp::ClientConnection>> polymorph::network::tcp::ConnectionPool::getConnections()
+std::vector<std::shared_ptr<polymorph::network::tcp::IClientConnection>> polymorph::network::tcp::ConnectionPool::getConnections()
 {
     std::lock_guard<std::mutex> lock(_connectionsMutex);
-    std::vector<std::shared_ptr<ClientConnection>> connections;
+    std::vector<std::shared_ptr<IClientConnection>> connections;
 
     std::copy_if(_connections.begin(), _connections.end(), std::back_inserter(connections), [](const auto &connection) {
         return connection->isConnected();
     });
+    return connections;
 }
 
-std::shared_ptr<polymorph::network::tcp::ClientConnection> polymorph::network::tcp::ConnectionPool::getConnectionBySessionId(polymorph::network::SessionId id)
+std::shared_ptr<polymorph::network::tcp::IClientConnection> polymorph::network::tcp::ConnectionPool::getConnectionBySessionId(polymorph::network::SessionId id)
 {
     std::lock_guard<std::mutex> lock(_connectionsMutex);
 
