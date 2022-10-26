@@ -64,10 +64,8 @@ polymorph::network::udp::PacketStore::_markAsAC(polymorph::network::PacketHeader
     auto manager = std::make_shared<SafePacketManager>(std::move(timer), header, data, _maxRetries, recipient);
     auto weak = std::weak_ptr<SafePacketManager>(manager);
     manager->timer.async_wait([this, weak](const asio::error_code &error) {
-        if (error == asio::error::operation_aborted || weak.expired()) {
-            std::cerr << "Manager freed" << std::endl;
+        if (error == asio::error::operation_aborted || weak.expired())
             return;
-        }
         auto manager = weak.lock();
         std::cerr <<  "Timer expired for packet " + std::to_string(manager->header.pId) + "and error code is " + std::to_string(error.value()) << std::endl;
         if (manager->remainingRetries == 0) {

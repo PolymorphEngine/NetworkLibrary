@@ -27,7 +27,6 @@ TEST(tcpE2E, ServerSend)
 
     // Client Setup
     Client client("127.0.0.1", 4242);
-    client.start();
 
     client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
@@ -69,8 +68,7 @@ TEST(tcpE2E, OpIdDispatchServerSend)
 
     // Client Setup
     Client client("127.0.0.1", 4242);
-    client.start();
-    client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+        client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
@@ -114,16 +112,14 @@ TEST(tcpE2E, ServerDispatchToAllClients)
 
     // Client1 Setup
     Client client1("127.0.0.1", 4242);
-    client1.start();
-    client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, const uint16_t& payload) {
+        client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, const uint16_t& payload) {
         client1Passed = (payload == checkPayload);
         return true;
     });
 
     // Client2 Setup
     Client client2("127.0.0.1", 4242);
-    client2.start();
-    client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+        client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         client2Passed = (payload == checkPayload);
         return true;
     });
@@ -170,16 +166,14 @@ TEST(tcpE2E, ServerSendOnlyOneClient)
 
     // Client1 Setup
     Client client1("127.0.0.1", 4242);
-    client1.start();
-    client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+        client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         client1Passed = (payload ==checkPayload);
         return true;
     });
 
     // Client2 Setup
     Client client2("127.0.0.1", 4242);
-    client2.start();
-    client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+        client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         client2Passed = (payload == checkPayload);
         return true;
     });
@@ -226,8 +220,7 @@ TEST(tcpE2E, ServerSendCallback)
 
     // Client Setup
     Client client("127.0.0.1", 4242);
-    client.start();
-    client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+        client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
