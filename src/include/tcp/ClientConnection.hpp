@@ -67,15 +67,15 @@ namespace polymorph::network::tcp
 
 /////////////////////////////// METHODS /////////////////////////////////
         public:
-            void start();
+            void start() override;
 
-            void send(std::vector<std::byte> data, std::function<void (const PacketHeader &, const std::vector<std::byte> &)> callback = nullptr);
+            void send(std::vector<std::byte> data, std::function<void (const PacketHeader&, const std::vector<std::byte> &)> callback) override;
 
-            bool isConnected();
+            bool isConnected() override;
 
-            SessionId getSessionId();
+            SessionId getSessionId() override;
 
-            PacketId getPacketId();
+            PacketId getPacketId() override;
 
         private:
             void _doSend();

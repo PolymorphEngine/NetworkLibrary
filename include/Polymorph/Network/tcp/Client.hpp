@@ -24,7 +24,7 @@ namespace polymorph::network::tcp
         public:
             Client(std::string host, std::uint16_t port);
 
-            ~Client() override = default;
+            ~Client() override;
 
 
 //////////////////////--------------------------/////////////////////////

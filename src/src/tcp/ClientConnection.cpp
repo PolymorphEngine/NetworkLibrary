@@ -25,7 +25,7 @@ void polymorph::network::tcp::ClientConnection::start()
     _doReceive();
 }
 
-void polymorph::network::tcp::ClientConnection::send(std::vector <std::byte> data, std::function<void(const PacketHeader &, const std::vector <std::byte> &)> callback)
+void polymorph::network::tcp::ClientConnection::send(std::vector<std::byte> data, std::function<void(const PacketHeader &, const std::vector <std::byte> &)> callback)
 {
     std::unique_lock<std::mutex> lock(_sendQueueMutex);
 
@@ -39,7 +39,7 @@ void polymorph::network::tcp::ClientConnection::send(std::vector <std::byte> dat
 void polymorph::network::tcp::ClientConnection::_doSend()
 {
     std::lock_guard<std::mutex> lock(_sendQueueMutex);
-    auto p = _sendQueue.front();
+    auto& p = _sendQueue.front();
     auto self(shared_from_this());
     _socket.async_send(asio::buffer(p.first), [this, self](const asio::error_code &error, std::size_t /* bytesSent */) {
         if (error || _stopped) {
@@ -85,7 +85,7 @@ void polymorph::network::tcp::ClientConnection::_doReceive()
     });
 }
 
-void polymorph::network::tcp::ClientConnection::_handleHandshakePacket(const PacketHeader &header,
+void polymorph::network::tcp::ClientConnection::_handleHandshakePacket(const PacketHeader &,
                                                                        const std::vector <std::byte> &bytes)
 {
     auto packet = SerializerTrait<Packet<ConnectionDto>>::deserialize(bytes);
@@ -120,7 +120,7 @@ bool polymorph::network::tcp::ClientConnection::_broadcastReceivedPacket(const P
         _stopped = true;
         _connectionPool.leave(shared_from_this());
         return false;
-    };
+    }
     return true;
 }
 

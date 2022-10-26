@@ -58,7 +58,7 @@ namespace polymorph::network
             std::vector<std::byte> buffer;
             auto payload = SerializerTrait<T>::serialize(packet.payload);
             PacketHeader header = packet.header;
-            header.pSize = payload.size();
+            header.pSize = static_cast<polymorph::network::PayloadSize>(payload.size());
             auto serializedHeader = SerializerTrait<PacketHeader>::serialize(header);
 
             buffer.reserve(sizeof(PacketHeader) + payload.size());

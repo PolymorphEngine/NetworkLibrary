@@ -167,14 +167,14 @@ TEST(tcpE2E, ServerSendOnlyOneClient)
     // Client1 Setup
     Client client1("127.0.0.1", 4242);
         client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
-        client1Passed = (payload ==checkPayload);
+        client1Passed = (payload == checkPayload);
         return true;
     });
 
     // Client2 Setup
     Client client2("127.0.0.1", 4242);
-        client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
-        client2Passed = (payload == checkPayload);
+    client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed](const PacketHeader &, uint16_t payload) {
+        client2Passed = false;
         return true;
     });
 

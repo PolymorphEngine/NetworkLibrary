@@ -32,3 +32,9 @@ void polymorph::network::tcp::Server::_doAccept()
         _doAccept();
     });
 }
+
+polymorph::network::tcp::Server::~Server()
+{
+    if (!_context.stopped())
+        _context.stop();
+}
