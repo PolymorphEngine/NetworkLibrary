@@ -55,11 +55,11 @@ namespace polymorph::network::tcp
         bool packetReceived(const PacketHeader &, const std::vector<std::byte> &bytes) final;
 
         template<typename T>
-        void registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const polymorph::network::Packet<T> &)> handler)
+        void registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const PacketHeader &, const T &)> handler)
         {
             _receiveCallbacks[opId].push_back([handler](const PacketHeader &header, const std::vector<std::byte> &bytes) {
                 Packet<T> packet = SerializerTrait<Packet<T>>::deserialize(bytes);
-                callback(header, packet.payload);
+                return handler(header, packet.payload);
             });
         }
         void unregisterReceiveHandlers(polymorph::network::OpId opId);
