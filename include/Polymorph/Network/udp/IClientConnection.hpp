@@ -22,7 +22,7 @@ namespace polymorph::network::tcp
 
             virtual void start() = 0;
 
-            virtual void send(std::vector<std::byte> data, std::function<void (const PacketHeader &, const std::vector<std::byte> &)> callback = nullptr) = 0;
+            virtual void send(std::vector<std::byte> data, std::function<void (const PacketHeader &, const std::vector<std::byte> &)> callback) = 0;
 
             virtual bool isConnected() = 0;
 

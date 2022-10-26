@@ -24,7 +24,7 @@ namespace polymorph::network::tcp
         public:
             Server(std::uint16_t port, SessionStore &sessionStore);
 
-            ~Server() override = default;
+            ~Server() override;
 
 
 //////////////////////--------------------------/////////////////////////
@@ -91,7 +91,7 @@ namespace polymorph::network::tcp
                     packet.header.sId = connection->getSessionId();
                     packet.payload = data;
                     auto serialized = SerializerTrait<Packet<T>>::serialize(packet);
-                    connection->send(serialized);
+                    connection->send(serialized, std::function<void (const PacketHeader &, const std::vector<std::byte> &)>());
                 }
             }
 

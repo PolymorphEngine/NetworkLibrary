@@ -5,7 +5,7 @@
 #include "Polymorph/Network/udp/Client.hpp"
 #include "Polymorph/Network/udp/Server.hpp"
 #include "Polymorph/Network/udp/Connector.hpp"
-#include "e2e-tests/udp/utils.hpp"
+#include "e2e-tests/utils.hpp"
 
 
 int main(){

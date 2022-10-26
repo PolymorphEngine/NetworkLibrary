@@ -12,7 +12,8 @@
 
 polymorph::network::tcp::APacketHandler::~APacketHandler()
 {
-    _context.stop();
+    if (!_context.stopped())
+        _context.stop();
     if (_thread.joinable())
         _thread.join();
 }

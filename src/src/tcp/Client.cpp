@@ -68,7 +68,7 @@ void polymorph::network::tcp::Client::connectWithSession(polymorph::network::Ses
 void polymorph::network::tcp::Client::_doSend()
 {
     std::lock_guard<std::mutex> lock(_sendQueueMutex);
-    auto p = _sendQueue.front();
+    auto& p = _sendQueue.front();
     _socket.async_send(asio::buffer(p.first), [this](const asio::error_code &error, std::size_t /* bytesSent */) mutable {
         if (error) {
             std::cerr << "Error while sending packet: " << error.message() << std::endl;
@@ -109,4 +109,10 @@ void polymorph::network::tcp::Client::_doReceive()
         }
         _doReceive();
     });
+}
+
+polymorph::network::tcp::Client::~Client()
+{
+    if (!_context.stopped())
+        _context.stop();
 }
