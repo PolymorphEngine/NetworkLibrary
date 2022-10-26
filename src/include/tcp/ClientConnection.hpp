@@ -26,7 +26,7 @@ namespace polymorph::network::tcp
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, IConnectionPool &pool, Server &packetHandler);
+            ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, Server &packetHandler);
 
             ~ClientConnection() = default;
 
@@ -41,7 +41,7 @@ namespace polymorph::network::tcp
 
         private:
             SessionStore &_sessionAttributor;
-            IConnectionPool &_connectionPool;
+            std::weak_ptr<IConnectionPool> _connectionPool;
             Server &_packetHandler;
 
             std::atomic<bool> _stopped;

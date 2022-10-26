@@ -10,7 +10,7 @@
 #include "tcp/ClientConnection.hpp"
 
 polymorph::network::tcp::Server::Server(std::uint16_t port, polymorph::network::SessionStore &sessionStore)
-    : _sessionStore(sessionStore), _acceptor(_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
+    : _sessionStore(sessionStore), _acceptor(_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)), _connectionPool(std::make_shared<ConnectionPool>())
 {
 
 }
