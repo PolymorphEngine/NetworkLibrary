@@ -41,7 +41,7 @@ namespace polymorph::network::tcp
              */
             SessionStore &_sessionStore;
 
-            ConnectionPool _connectionPool;
+            std::shared_ptr<ConnectionPool> _connectionPool;
 
             asio::ip::tcp::acceptor _acceptor;
 
@@ -57,7 +57,7 @@ namespace polymorph::network::tcp
             template<typename T>
             void sendTo(OpId opId, T &data, SessionId sessionId, std::function<void(const PacketHeader &, const T &)> callback = nullptr)
             {
-                auto connection = _connectionPool.getConnectionBySessionId(sessionId);
+                auto connection = _connectionPool->getConnectionBySessionId(sessionId);
 
                 if (connection == nullptr) {
                     std::cerr << "Trying to send a packet to a non existing session" << std::endl;
@@ -81,7 +81,7 @@ namespace polymorph::network::tcp
             template<typename T>
             void send(OpId opId, T &data)
             {
-                auto connections = _connectionPool.getConnections();
+                auto connections = _connectionPool->getConnections();
 
                 for (auto &connection : connections) {
                     auto pId = connection->getPacketId();

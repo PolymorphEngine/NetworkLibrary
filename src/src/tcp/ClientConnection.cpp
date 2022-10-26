@@ -7,6 +7,7 @@
 
 
 #include <iostream>
+#include <utility>
 #include "tcp/ClientConnection.hpp"
 #include "Polymorph/Network/SerializerTrait.hpp"
 #include "Polymorph/Network/dto/ConnectionDto.hpp"
@@ -15,13 +16,14 @@
 #include "Polymorph/Network/exceptions/UnauthorizedException.hpp"
 
 
-polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, IConnectionPool &pool, Server &packetHandler)
-        : _sessionAttributor(sessionStore), _connectionPool(pool), _packetHandler(packetHandler), _stopped(false), _connected(false), _writeInProgress(false), _socket(std::move(socket))
+polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, Server &packetHandler)
+        : _sessionAttributor(sessionStore), _connectionPool(std::move(pool)), _packetHandler(packetHandler), _stopped(false), _connected(false), _writeInProgress(false), _socket(std::move(socket))
 {}
 
 void polymorph::network::tcp::ClientConnection::start()
 {
-    _connectionPool.join(shared_from_this());
+    if (!_connectionPool.expired())
+        _connectionPool.lock()->join(shared_from_this());
     _doReceive();
 }
 
@@ -44,7 +46,8 @@ void polymorph::network::tcp::ClientConnection::_doSend()
     _socket.async_send(asio::buffer(p.first), [this, self](const asio::error_code &error, std::size_t /* bytesSent */) {
         if (error || _stopped) {
             _stopped = true;
-            _connectionPool.leave(shared_from_this());
+            if (!_connectionPool.expired())
+                _connectionPool.lock()->leave(shared_from_this());
             return;
         }
         std::unique_lock<std::mutex> lock(_sendQueueMutex);
@@ -68,7 +71,8 @@ void polymorph::network::tcp::ClientConnection::_doReceive()
     _socket.async_receive(asio::buffer(_internalBuffer), [this, self](const asio::error_code &error, std::size_t bytesReceived) {
         if (error || _stopped) {
             _stopped = true;
-            _connectionPool.leave(shared_from_this());
+            if (!_connectionPool.expired())
+                _connectionPool.lock()->leave(shared_from_this());
             return;
         }
         _receiveBuffer.insert(_receiveBuffer.end(), _internalBuffer.begin(), _internalBuffer.begin() + bytesReceived);
@@ -118,7 +122,8 @@ bool polymorph::network::tcp::ClientConnection::_broadcastReceivedPacket(const P
 {
     if (!_packetHandler.packetReceived(header, bytes)) {
         _stopped = true;
-        _connectionPool.leave(shared_from_this());
+        if (!_connectionPool.expired())
+            _connectionPool.lock()->leave(shared_from_this());
         return false;
     }
     return true;
