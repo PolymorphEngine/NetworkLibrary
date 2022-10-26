@@ -50,17 +50,59 @@ namespace polymorph::network
     };
 
     template<typename T>
+    struct SerializerTrait<Packet<T>, true>
+    {
+
+        static std::vector<std::byte> serialize(const Packet<T> &packet)
+        {
+            std::vector<std::byte> buffer;
+            auto payload = SerializerTrait<T>::serialize(packet.payload);
+            PacketHeader header = packet.header;
+            header.pSize = payload.size();
+            auto serializedHeader = SerializerTrait<PacketHeader>::serialize(header);
+
+            buffer.reserve(sizeof(PacketHeader) + payload.size());
+            std::copy(serializedHeader.begin(), serializedHeader.end(), std::back_inserter(buffer));
+            std::copy(payload.begin(), payload.end(), std::back_inserter(buffer));
+
+            return buffer;
+        }
+
+        static Packet<T> deserialize(const std::vector<std::byte> &buffer)
+        {
+            Packet<T> packet = {};
+            std::vector<std::byte> payloadBuffer;
+
+            if (buffer.size() < sizeof(PacketHeader))
+                throw exceptions::DeserializingException("Buffer size does not contains a packet header");
+
+            payloadBuffer.reserve(buffer.size() - sizeof(PacketHeader));
+            std::copy(buffer.begin() + sizeof(PacketHeader), buffer.end(), std::back_inserter(payloadBuffer));
+            packet.header = SerializerTrait<PacketHeader>::deserialize(buffer);
+
+            if (buffer.size() < sizeof(PacketHeader) + packet.header.pSize)
+                throw exceptions::DeserializingException("Buffer size does not contains a packet");
+
+            packet.payload = SerializerTrait<T>::deserialize(payloadBuffer);
+            return packet;
+        }
+
+    };
+
+    template<typename T>
     struct SerializerTrait<Packet<T>, false>
     {
 
             static std::vector<std::byte> serialize(const Packet<T> &packet)
             {
                 std::vector<std::byte> buffer;
-                auto header = SerializerTrait<PacketHeader>::serialize(packet.header);
                 auto payload = SerializerTrait<T>::serialize(packet.payload);
+                PacketHeader header = packet.header;
+                header.pSize = payload.size();
+                auto serializedHeader = SerializerTrait<PacketHeader>::serialize(header);
 
-                buffer.reserve(sizeof(PacketHeader) + sizeof(T));
-                std::copy(header.begin(), header.end(), std::back_inserter(buffer));
+                buffer.reserve(sizeof(PacketHeader) + payload.size());
+                std::copy(serializedHeader.begin(), serializedHeader.end(), std::back_inserter(buffer));
                 std::copy(payload.begin(), payload.end(), std::back_inserter(buffer));
 
                 return buffer;
@@ -77,6 +119,9 @@ namespace polymorph::network
                 payloadBuffer.reserve(buffer.size() - sizeof(PacketHeader));
                 std::copy(buffer.begin() + sizeof(PacketHeader), buffer.end(), std::back_inserter(payloadBuffer));
                 packet.header = SerializerTrait<PacketHeader>::deserialize(buffer);
+
+                if (buffer.size() < sizeof(PacketHeader) + packet.header.pSize)
+                    throw exceptions::DeserializingException("Buffer size does not contains a packet");
                 packet.payload = SerializerTrait<T>::deserialize(payloadBuffer);
                 return packet;
             }

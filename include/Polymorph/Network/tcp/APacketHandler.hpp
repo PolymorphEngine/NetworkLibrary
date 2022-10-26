@@ -64,8 +64,6 @@ namespace polymorph::network::tcp
         }
         void unregisterReceiveHandlers(polymorph::network::OpId opId);
 
-        virtual void start() = 0;
-
     protected:
         virtual void _run() final;
 

@@ -41,7 +41,7 @@ void polymorph::network::tcp::ClientConnection::_doSend()
     std::lock_guard<std::mutex> lock(_sendQueueMutex);
     auto p = _sendQueue.front();
     auto self(shared_from_this());
-    _socket.async_send(asio::buffer(p.first), [this, self](const asio::error_code &error, std::size_t /* bytesSent */) mutable {
+    _socket.async_send(asio::buffer(p.first), [this, self](const asio::error_code &error, std::size_t /* bytesSent */) {
         if (error || _stopped) {
             _stopped = true;
             _connectionPool.leave(shared_from_this());
@@ -75,7 +75,7 @@ void polymorph::network::tcp::ClientConnection::_doReceive()
         while (_receiveBuffer.size() > sizeof(PacketHeader) ) {
             auto header = SerializerTrait<PacketHeader>::deserialize(_receiveBuffer);
             if (_receiveBuffer.size() >= sizeof(PacketHeader) + header.pSize) {
-                if (!_determinePacket(header, std::vector<std::byte>(_receiveBuffer.begin() + sizeof(PacketHeader), _receiveBuffer.begin() + sizeof(PacketHeader) + header.pSize)))
+                if (!_determinePacket(header, _receiveBuffer))
                     return;
                 _receiveBuffer.erase(_receiveBuffer.begin(), _receiveBuffer.begin() + sizeof(PacketHeader) + header.pSize);
             } else
@@ -92,6 +92,7 @@ void polymorph::network::tcp::ClientConnection::_handleHandshakePacket(const Pac
 
     if (authorizationKey::areSame(packet.payload.authKey, authorizationKey::zero)) {
         _sessionId = _sessionAttributor.registerClient(_socket.remote_endpoint());
+        _connected = true;
         ConnectionResponseDto response{ .authorized = true};
         _packetHandler.sendTo(ConnectionResponseDto::opId, response, _sessionId);
         return;
@@ -100,11 +101,13 @@ void polymorph::network::tcp::ClientConnection::_handleHandshakePacket(const Pac
     try {
         _sessionAttributor.registerAuthoredClient(_socket.remote_endpoint(), packet.payload.sessionId, packet.payload.authKey);
         _sessionId = packet.payload.sessionId;
+        _connected = true;
         ConnectionResponseDto response{ .authorized = true};
         _packetHandler.sendTo(ConnectionResponseDto::opId, response, _sessionId);
     } catch(const exceptions::UnauthorizedException &e) {
         std::cerr << "Error while registering client: " << e.what() << std::endl;
         _sessionId = _sessionAttributor.registerClient(_socket.remote_endpoint());
+        _connected = true;
         ConnectionResponseDto response{ .authorized = false};
         _packetHandler.sendTo(ConnectionResponseDto::opId, response, _sessionId);
     }

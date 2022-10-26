@@ -26,6 +26,8 @@ void polymorph::network::tcp::Server::_doAccept()
     _acceptor.async_accept([this](std::error_code ec, asio::ip::tcp::socket socket) {
         if (!ec) {
             std::make_shared<ClientConnection>(std::move(socket), _sessionStore, _connectionPool, *this)->start();
+        } else if (ec != asio::error::operation_aborted) {
+            std::cerr << "Error while accepting new connection: " << ec.message() << std::endl;
         }
         _doAccept();
     });

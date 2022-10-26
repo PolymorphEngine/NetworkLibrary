@@ -31,7 +31,6 @@ TEST(tcpE2E, ClientSend)
 
     // Client Setup
     Client client("127.0.0.1", 4242);
-    client.start();
 
     // Client Infos
     SessionId id;
@@ -70,7 +69,6 @@ TEST(tcpE2E, ClientSendCallback)
 
     // Client Setup
     Client client("127.0.0.1", 4242);
-    client.start();
 
     // Client Infos
     SessionId id;
@@ -106,7 +104,6 @@ TEST(tcpE2E, SafetyClientSend)
     // Client Setup
     SessionStore serverStore;
     Client client("127.0.0.1", 4242, serverStore);
-    client.start();
 
     // Client Infos
     SessionId id;

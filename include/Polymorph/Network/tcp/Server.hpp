@@ -52,7 +52,7 @@ namespace polymorph::network::tcp
 
 /////////////////////////////// METHODS /////////////////////////////////
         public:
-            void start() override;
+            void start();
 
             template<typename T>
             void sendTo(OpId opId, T &data, SessionId sessionId, std::function<void(const PacketHeader &, const T &)> callback = nullptr)

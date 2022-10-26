@@ -37,6 +37,7 @@ namespace polymorph::network::tcp
 
         private:
             asio::ip::tcp::socket _socket;
+        asio::ip::tcp::endpoint _serverEndpoint;
 
             PacketId _currentPacketId = 0;
             SessionId _currentSession = 0;
@@ -88,8 +89,6 @@ namespace polymorph::network::tcp
             void connect(std::function<void(bool, SessionId)> callback);
 
             void connectWithSession(SessionId session, AuthorizationKey authKey, std::function<void(bool, SessionId)> callback);
-
-            void start() override;
 
 
         private:
