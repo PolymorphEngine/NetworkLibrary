@@ -7,35 +7,30 @@
 
 #include <gtest/gtest.h>
 #include <thread>
-#include "Polymorph/Network/udp/Server.hpp"
-#include "Polymorph/Network/udp/Client.hpp"
+#include "Polymorph/Network/tcp/Server.hpp"
+#include "Polymorph/Network/tcp/Client.hpp"
 #include "../utils.hpp"
 
-TEST(udpE2E, ServerSend)
+TEST(tcpE2E, ServerSend)
 {
     //checks
     std::uint16_t input_data = 42;
     std::uint16_t output_data = 0;
 
     using namespace polymorph::network;
-    using namespace polymorph::network::udp;
-    std::map<OpId, bool> safeties = {
-            { 2, true }
-    };
+    using namespace polymorph::network::tcp;
 
     // Server Setup
-    Server server(4242, safeties);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    SessionStore serverStore;
+    Server server(4242, serverStore);
+    server.start();
 
     // Client Setup
-    Client client("127.0.0.1", 4242, safeties);
-    auto clientConnector = std::make_shared<Connector>(client);
-    client.setConnector(clientConnector);
-    clientConnector->start();
+    Client client("127.0.0.1", 4242);
+
     client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
+        return true;
     });
 
     // Client Infos
@@ -55,7 +50,7 @@ TEST(udpE2E, ServerSend)
     ASSERT_EQ(input_data, output_data);
 }
 
-TEST(udpE2E, OpIdDispatchServerSend)
+TEST(tcpE2E, OpIdDispatchServerSend)
 {
     //checks
     std::uint16_t input_data = 42;
@@ -64,28 +59,22 @@ TEST(udpE2E, OpIdDispatchServerSend)
     std::uint8_t output_char = ' ';
 
     using namespace polymorph::network;
-    using namespace polymorph::network::udp;
-    std::map<OpId, bool> safeties = {
-            { 2, true },
-            { 3, true }
-    };
+    using namespace polymorph::network::tcp;
 
     // Server Setup
-    Server server(4242, safeties);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    SessionStore serverStore;
+    Server server(4242, serverStore);
+    server.start();
 
     // Client Setup
-    Client client("127.0.0.1", 4242, safeties);
-    auto clientConnector = std::make_shared<Connector>(client);
-    client.setConnector(clientConnector);
-    clientConnector->start();
-    client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    Client client("127.0.0.1", 4242);
+        client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
+        return true;
     });
     client.registerReceiveHandler<std::uint8_t>(3, [&output_char](const PacketHeader &, std::uint8_t payload) {
         output_char = payload;
+        return true;
     });
 
     // Client Infos
@@ -106,7 +95,7 @@ TEST(udpE2E, OpIdDispatchServerSend)
     ASSERT_EQ(input_data, output_data);
 }
 
-TEST(udpE2E, ServerDispatchToAllClients)
+TEST(tcpE2E, ServerDispatchToAllClients)
 {
     //checks
     bool client1Passed = false;
@@ -114,35 +103,25 @@ TEST(udpE2E, ServerDispatchToAllClients)
     std::uint16_t checkPayload = 42;
 
     using namespace polymorph::network;
-    using namespace polymorph::network::udp;
-    std::map<OpId, bool> safeties = {
-            { 2, true }
-    };
+    using namespace polymorph::network::tcp;
 
     // Server Setup
-    Server server(4242, safeties);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    SessionStore serverStore;
+    Server server(4242, serverStore);
+    server.start();
 
     // Client1 Setup
-    Client client1("127.0.0.1", 4242, safeties);
-    auto client1Connector = std::make_shared<Connector>(client1);
-    client1.setConnector(client1Connector);
-    client1Connector->start();
-    client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
-        ASSERT_EQ(payload, checkPayload);
-        client1Passed = true;
+    Client client1("127.0.0.1", 4242);
+        client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, const uint16_t& payload) {
+        client1Passed = (payload == checkPayload);
+        return true;
     });
 
     // Client2 Setup
-    Client client2("127.0.0.1", 4242, safeties);
-    auto client2Connector = std::make_shared<Connector>(client2);
-    client2.setConnector(client2Connector);
-    client2Connector->start();
-    client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
-        ASSERT_EQ(payload, checkPayload);
-        client2Passed = true;
+    Client client2("127.0.0.1", 4242);
+        client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+        client2Passed = (payload == checkPayload);
+        return true;
     });
 
     // Client Infos
@@ -170,7 +149,7 @@ TEST(udpE2E, ServerDispatchToAllClients)
     ASSERT_TRUE(client2Passed);
 }
 
-TEST(udpE2E, ServerSendOnlyOneClient)
+TEST(tcpE2E, ServerSendOnlyOneClient)
 {
     //checks
     bool client1Passed = false;
@@ -178,35 +157,25 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     std::uint16_t checkPayload = 42;
 
     using namespace polymorph::network;
-    using namespace polymorph::network::udp;
-    std::map<OpId, bool> safeties = {
-            { 2, true }
-    };
+    using namespace polymorph::network::tcp;
 
     // Server Setup
-    Server server(4242, safeties);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    SessionStore serverStore;
+    Server server(4242, serverStore);
+    server.start();
 
     // Client1 Setup
-    Client client1("127.0.0.1", 4242, safeties);
-    auto client1Connector = std::make_shared<Connector>(client1);
-    client1.setConnector(client1Connector);
-    client1Connector->start();
-    client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
-        ASSERT_EQ(payload, checkPayload);
-        client1Passed = true;
+    Client client1("127.0.0.1", 4242);
+        client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+        client1Passed = (payload == checkPayload);
+        return true;
     });
 
     // Client2 Setup
-    Client client2("127.0.0.1", 4242, safeties);
-    auto client2Connector = std::make_shared<Connector>(client2);
-    client2.setConnector(client2Connector);
-    client2Connector->start();
-    client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
-        ASSERT_EQ(payload, checkPayload);
+    Client client2("127.0.0.1", 4242);
+    client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed](const PacketHeader &, uint16_t payload) {
         client2Passed = false;
+        return true;
     });
 
     // Client Infos
@@ -234,7 +203,7 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     ASSERT_TRUE(client2Passed);
 }
 
-TEST(udpE2E, ServerSendCallback)
+TEST(tcpE2E, ServerSendCallback)
 {
     //checks
     std::uint16_t input_data = 42;
@@ -242,24 +211,18 @@ TEST(udpE2E, ServerSendCallback)
     bool passed = false;
 
     using namespace polymorph::network;
-    using namespace polymorph::network::udp;
-    std::map<OpId, bool> safeties = {
-            { 2, true }
-    };
+    using namespace polymorph::network::tcp;
 
     // Server Setup
-    Server server(4242, safeties);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    SessionStore serverStore;
+    Server server(4242, serverStore);
+    server.start();
 
     // Client Setup
-    Client client("127.0.0.1", 4242, safeties);
-    auto clientConnector = std::make_shared<Connector>(client);
-    client.setConnector(clientConnector);
-    clientConnector->start();
-    client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    Client client("127.0.0.1", 4242);
+        client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
+        return true;
     });
 
     // Client Infos
@@ -283,22 +246,18 @@ TEST(udpE2E, ServerSendCallback)
 
 #ifdef PNL_SERVER_TEST
 #if PNL_CLIENT_TEST == 1
-TEST(udpE2E, SafetyServerReceive)
+TEST(tcpE2E, SafetyServerReceive)
 {
     //checks
     std::uint32_t output_data = 0;
 
     using namespace polymorph::network;
-    using namespace polymorph::network::udp;
-    std::map<OpId, bool> safeties = {
-            { 2, false }
-    };
+    using namespace polymorph::network::tcp;
 
     // Server Setup
-    Server server(4242, safeties);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    SessionStore serverStore;
+    Server server(4242, serverStore);
+    server.start();
 
     server.registerReceiveHandler<std::uint32_t>(2, [&output_data](const PacketHeader &, const std::uint32_t &payload) {
         output_data = payload;
