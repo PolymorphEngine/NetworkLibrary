@@ -14,6 +14,8 @@
 #include "authorizationKey.hpp"
 #include "Polymorph/Network/dto/ConnectionResponseDto.hpp"
 #include "Polymorph/Network/exceptions/UnauthorizedException.hpp"
+#include "Polymorph/Network/dto/SessionTransferRequestDto.hpp"
+#include "Polymorph/Network/dto/SessionTransferResponseDto.hpp"
 
 
 polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, Server &packetHandler)
@@ -135,6 +137,9 @@ bool polymorph::network::tcp::ClientConnection::_determinePacket(const polymorph
     if (header.opId == ConnectionDto::opId) {
         _handleHandshakePacket(header, bytes);
         return true;
+    } else if (header.opId == SessionTransferRequestDto::opId) {
+        _handleSessionTransferPacket(header, bytes);
+        return true;
     } else {
         return _broadcastReceivedPacket(header, bytes);
     }
@@ -153,4 +158,13 @@ polymorph::network::SessionId polymorph::network::tcp::ClientConnection::getSess
 polymorph::network::PacketId polymorph::network::tcp::ClientConnection::getPacketId()
 {
     return ++_packetId;
+}
+
+void polymorph::network::tcp::ClientConnection::_handleSessionTransferPacket(const polymorph::network::PacketHeader &header,
+                                                                             const std::vector<std::byte> &bytes)
+{
+    auto packet = SerializerTrait<Packet<SessionTransferRequestDto>>::deserialize(bytes);
+    auto key = _sessionAttributor.generateUdpAuthorizationKey(packet.header.sId);
+    SessionTransferResponseDto response{ .authKey = key};
+    _packetHandler.sendTo(SessionTransferResponseDto::opId, response, packet.header.sId);
 }

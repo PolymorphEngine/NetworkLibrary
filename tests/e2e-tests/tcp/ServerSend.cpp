@@ -28,7 +28,7 @@ TEST(tcpE2E, ServerSend)
     // Client Setup
     Client client("127.0.0.1", 4242);
 
-    client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    client.registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
@@ -44,8 +44,7 @@ TEST(tcpE2E, ServerSend)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server.send(2, input_data);
-    // server.sendTo(2, input_data, id); NOT WORKING LA PTN DE SA
+    server.send(3, input_data);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_data, output_data);
 }
@@ -68,11 +67,11 @@ TEST(tcpE2E, OpIdDispatchServerSend)
 
     // Client Setup
     Client client("127.0.0.1", 4242);
-        client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+        client.registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
-    client.registerReceiveHandler<std::uint8_t>(3, [&output_char](const PacketHeader &, std::uint8_t payload) {
+    client.registerReceiveHandler<std::uint8_t>(4, [&output_char](const PacketHeader &, std::uint8_t payload) {
         output_char = payload;
         return true;
     });
@@ -88,8 +87,8 @@ TEST(tcpE2E, OpIdDispatchServerSend)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server.send(3, input_char);
-    server.send(2, input_data);
+    server.send(4, input_char);
+    server.send(3, input_data);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_char, output_char);
     ASSERT_EQ(input_data, output_data);
@@ -112,14 +111,14 @@ TEST(tcpE2E, ServerDispatchToAllClients)
 
     // Client1 Setup
     Client client1("127.0.0.1", 4242);
-        client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, const uint16_t& payload) {
+        client1.registerReceiveHandler<std::uint16_t>(3, [&client1Passed, &checkPayload](const PacketHeader &, const uint16_t& payload) {
         client1Passed = (payload == checkPayload);
         return true;
     });
 
     // Client2 Setup
     Client client2("127.0.0.1", 4242);
-        client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+        client2.registerReceiveHandler<std::uint16_t>(3, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         client2Passed = (payload == checkPayload);
         return true;
     });
@@ -143,7 +142,7 @@ TEST(tcpE2E, ServerDispatchToAllClients)
     PNL_WAIT_COND_LOOP(!connected1 || !connected2, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected1);
     ASSERT_TRUE(connected2);
-    server.send(2, checkPayload);
+    server.send(3, checkPayload);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(client1Passed);
     ASSERT_TRUE(client2Passed);
@@ -166,14 +165,14 @@ TEST(tcpE2E, ServerSendOnlyOneClient)
 
     // Client1 Setup
     Client client1("127.0.0.1", 4242);
-        client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+        client1.registerReceiveHandler<std::uint16_t>(3, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         client1Passed = (payload == checkPayload);
         return true;
     });
 
     // Client2 Setup
     Client client2("127.0.0.1", 4242);
-    client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed](const PacketHeader &, uint16_t payload) {
+    client2.registerReceiveHandler<std::uint16_t>(3, [&client2Passed](const PacketHeader &, uint16_t payload) {
         client2Passed = false;
         return true;
     });
@@ -197,7 +196,7 @@ TEST(tcpE2E, ServerSendOnlyOneClient)
     PNL_WAIT_COND_LOOP(!connected1 || !connected2, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected1);
     ASSERT_TRUE(connected2);
-    server.sendTo(2, checkPayload, id1);
+    server.sendTo(3, checkPayload, id1);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(client1Passed);
     ASSERT_TRUE(client2Passed);
@@ -220,7 +219,7 @@ TEST(tcpE2E, ServerSendCallback)
 
     // Client Setup
     Client client("127.0.0.1", 4242);
-        client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+        client.registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
@@ -236,7 +235,7 @@ TEST(tcpE2E, ServerSendCallback)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server.sendTo<std::uint16_t>(2, input_data, id, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
+    server.sendTo<std::uint16_t>(3, input_data, id, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
         passed = true;
     });
     PNL_WAIT(PNL_TIME_OUT)

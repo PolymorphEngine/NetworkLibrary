@@ -12,6 +12,7 @@
 #include "Polymorph/Network/dto/ConnectionResponseDto.hpp"
 #include "Polymorph/Network/dto/ACKDto.hpp"
 #include "udp/SafePacketManager.hpp"
+#include "Polymorph/Network/dto/SessionTransferRequestDto.hpp"
 
 
 polymorph::network::udp::Client::Client(std::string host, std::uint16_t port, std::map<OpId, bool> safeties)
@@ -33,6 +34,7 @@ polymorph::network::udp::Client::Client(std::string host, std::uint16_t port, st
 {
     _safeties[ConnectionDto::opId] = true;
     _safeties[ACKDto::opId] = false;
+    _safeties[SessionTransferRequestDto::opId] = true;
 }
 
 void polymorph::network::udp::Client::ackReceived(const asio::ip::udp::endpoint&, polymorph::network::PacketId acknoledgedId)

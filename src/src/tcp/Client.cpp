@@ -45,7 +45,7 @@ void polymorph::network::tcp::Client::connect(std::function<void(bool, SessionId
 void polymorph::network::tcp::Client::connectWithSession(polymorph::network::SessionId session,
                                                          polymorph::network::AuthorizationKey authKey, std::function<void(bool, SessionId)> callback)
 {
-    _socket.async_connect(_serverEndpoint, [this, callback, &session, &authKey](std::error_code ec) {
+    _socket.async_connect(_serverEndpoint, [this, callback, session, authKey](std::error_code ec) {
         if (ec) {
             std::cerr << "Error while connecting to server: " << ec.message() << std::endl;
             callback(false, 0);
