@@ -13,24 +13,29 @@
 #include "Polymorph/Network/dto/ConnectionResponseDto.hpp"
 #include "Polymorph/Network/exceptions/UnauthorizedException.hpp"
 #include "Polymorph/Network/dto/ACKDto.hpp"
+#include "Polymorph/Network/dto/SessionTransferRequestDto.hpp"
+#include "Polymorph/Network/dto/SessionTransferResponseDto.hpp"
 
-polymorph::network::udp::Server::Server(std::uint16_t port, std::map<OpId, bool> safeties)
+polymorph::network::udp::Server::Server(std::uint16_t port, std::map<OpId, bool> safeties, SessionStore &sessionStore)
     : APacketHandler(asio::ip::udp::endpoint(asio::ip::udp::v4(), port)),
         _packetManager(_context, safeties,
             [this](std::shared_ptr<SafePacketManager> manager) {
                 _socket.async_send_to(asio::buffer(manager->sPacket), manager->endpoint,
-                      [manager](const asio::error_code &error, std::size_t) {
-                          if (error) {
-                              std::cerr << "Error while sending packet: " << error.message() << std::endl;
-                              return;
-                          }
-                    });
-                      }
-                ),
-            _safeties(std::move(safeties))
+                    [manager](const asio::error_code &error, std::size_t) {
+                        if (error) {
+                            std::cerr << "Error while sending packet: " << error.message() << std::endl;
+                            return;
+                        }
+                    }
+                );
+            }
+        ),
+        _safeties(std::move(safeties)),
+        _sessionStore(sessionStore)
 {
-    _safeties[ConnectionDto::opId] = true;
+    _safeties[ConnectionResponseDto::opId] = true;
     _safeties[ACKDto::opId] = false;
+    _safeties[SessionTransferResponseDto::opId] = true;
 }
 
 void polymorph::network::udp::Server::ackReceived(const asio::ip::udp::endpoint &from,
@@ -61,6 +66,8 @@ void polymorph::network::udp::Server::_onPacketReceived(const asio::ip::udp::end
 {
     if (header.opId == ConnectionDto::opId)
         _handleConnectionHandshake(from, header, bytes);
+    else if (header.opId == SessionTransferRequestDto::opId)
+        _handleSessionTransfer(from, header, bytes);
     if (_safeties.contains(header.opId) && _safeties.at(header.opId))
         _sendAckPacket(from, header);
 }
@@ -84,7 +91,11 @@ void polymorph::network::udp::Server::_handleConnectionHandshake(const asio::ip:
 
     try {
         _sessionStore.registerAuthoredClient(from, packet.payload.sessionId, packet.payload.authKey);
-        ConnectionResponseDto response{ .authorized = true};
+        ConnectionResponseDto response{.authorized = false};
+        if (!_packetManager.registerClient(from)) {
+            _sessionStore.removeClient(from);
+        } else
+            response.authorized = true;
         sendTo<ConnectionResponseDto>(ConnectionResponseDto::opId, response, packet.payload.sessionId);
     } catch(const exceptions::UnauthorizedException &e) {
         std::cerr << "Error while registering client: " << e.what() << std::endl;
@@ -99,4 +110,15 @@ void polymorph::network::udp::Server::_sendAckPacket(const asio::ip::udp::endpoi
 {
     ACKDto ack{ .id = header.pId};
     sendTo<ACKDto>(ACKDto::opId, ack, _sessionStore.sessionOf(from));
+}
+
+void polymorph::network::udp::Server::_handleSessionTransfer(const asio::ip::udp::endpoint &from,
+                                                             const polymorph::network::PacketHeader &header,
+                                                             const std::vector<std::byte> &bytes)
+{
+    auto packet = SerializerTrait<Packet<SessionTransferRequestDto>>::deserialize(bytes);
+    auto key = _sessionStore.generateTcpAuthorizationKey(packet.header.sId);
+    SessionTransferResponseDto response{ .authKey = key};
+
+    sendTo<SessionTransferResponseDto>(SessionTransferResponseDto::opId, response, packet.header.sId);
 }

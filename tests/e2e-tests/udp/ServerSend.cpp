@@ -24,7 +24,8 @@ TEST(udpE2E, ServerSend)
     };
 
     // Server Setup
-    Server server(4242, safeties);
+    SessionStore serverStore;
+    Server server(4242, safeties, serverStore);
     auto serverConnector = std::make_shared<Connector>(server);
     server.setConnector(serverConnector);
     serverConnector->start();
@@ -71,7 +72,8 @@ TEST(udpE2E, OpIdDispatchServerSend)
     };
 
     // Server Setup
-    Server server(4242, safeties);
+    SessionStore serverStore;
+    Server server(4242, safeties, serverStore);
     auto serverConnector = std::make_shared<Connector>(server);
     server.setConnector(serverConnector);
     serverConnector->start();
@@ -120,7 +122,8 @@ TEST(udpE2E, ServerDispatchToAllClients)
     };
 
     // Server Setup
-    Server server(4242, safeties);
+    SessionStore serverStore;
+    Server server(4242, safeties, serverStore);
     auto serverConnector = std::make_shared<Connector>(server);
     server.setConnector(serverConnector);
     serverConnector->start();
@@ -184,7 +187,8 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     };
 
     // Server Setup
-    Server server(4242, safeties);
+    SessionStore serverStore;
+    Server server(4242, safeties, serverStore);
     auto serverConnector = std::make_shared<Connector>(server);
     server.setConnector(serverConnector);
     serverConnector->start();
@@ -248,7 +252,8 @@ TEST(udpE2E, ServerSendCallback)
     };
 
     // Server Setup
-    Server server(4242, safeties);
+    SessionStore serverStore;
+    Server server(4242, safeties, serverStore);
     auto serverConnector = std::make_shared<Connector>(server);
     server.setConnector(serverConnector);
     serverConnector->start();
