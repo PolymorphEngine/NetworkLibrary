@@ -26,7 +26,7 @@ namespace polymorph::network::udp
              * @param port The port to use by the server
              * @param safeties The safeties map to use to determine if a packet require ack or not
              */
-            Server(std::uint16_t port, std::map<OpId, bool> safeties);
+            Server(std::uint16_t port, std::map<OpId, bool> safeties, SessionStore &sessionStore);
 
             ~Server() override = default;
 
@@ -48,7 +48,7 @@ namespace polymorph::network::udp
             /**
              * @brief The session store used to manage the sessions
              */
-            SessionStore _sessionStore;
+            SessionStore &_sessionStore;
 
             std::map<OpId, bool> _safeties;
 
@@ -123,6 +123,9 @@ namespace polymorph::network::udp
         private:
             void _handleConnectionHandshake(const asio::ip::udp::endpoint &from, const PacketHeader &header,
                                             const std::vector<std::byte> &bytes);
+
+            void _handleSessionTransfer(const asio::ip::udp::endpoint &from, const PacketHeader &header,
+                                        const std::vector<std::byte> &bytes);
 
             void _sendAckPacket(const asio::ip::udp::endpoint &from, const PacketHeader &header);
 

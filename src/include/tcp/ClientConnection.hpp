@@ -53,11 +53,11 @@ namespace polymorph::network::tcp
             std::mutex _sendQueueMutex;
 
             std::vector<std::byte> _receiveBuffer;
-            std::array<std::byte, 1024> _internalBuffer;
+            std::array<std::byte, 1024> _internalBuffer{};
 
             asio::ip::tcp::socket _socket;
 
-            SessionId _sessionId;
+            SessionId _sessionId{};
             PacketId _packetId = 0;
 
 
@@ -83,6 +83,8 @@ namespace polymorph::network::tcp
             void _doReceive();
 
             void _handleHandshakePacket(const PacketHeader &header, const std::vector<std::byte> &bytes);
+
+            void _handleSessionTransferPacket(const PacketHeader &header, const std::vector<std::byte> &bytes);
 
             bool _broadcastReceivedPacket(const PacketHeader &header, const std::vector<std::byte> &bytes);
 
