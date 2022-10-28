@@ -2,9 +2,9 @@
 #include <functional>
 #include <any>
 #include <map>
-#include "Polymorph/Network/udp/Client.hpp"
-#include "Polymorph/Network/udp/Server.hpp"
-#include "Polymorph/Network/udp/Connector.hpp"
+#include "polymorph/network/udp/Client.hpp"
+#include "polymorph/network/udp/Server.hpp"
+#include "polymorph/network/udp/Connector.hpp"
 #include "e2e-tests/utils.hpp"
 
 

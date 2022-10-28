@@ -7,8 +7,8 @@
 
 #include <gtest/gtest.h>
 #include <thread>
-#include "Polymorph/Network/tcp/Server.hpp"
-#include "Polymorph/Network/tcp/Client.hpp"
+#include "polymorph/network/tcp/Server.hpp"
+#include "polymorph/network/tcp/Client.hpp"
 #include "../utils.hpp"
 
 TEST(tcpE2E, ServerSend)

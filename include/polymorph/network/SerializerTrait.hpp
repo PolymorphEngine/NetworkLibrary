@@ -9,8 +9,8 @@
 
 #include <cstring>
 #include <vector>
-#include "Polymorph/Network/Packet.hpp"
-#include "Polymorph/Network/exceptions/DeserializingException.hpp"
+#include "polymorph/network/Packet.hpp"
+#include "polymorph/network/exceptions/DeserializingException.hpp"
 
 namespace polymorph::network
 {

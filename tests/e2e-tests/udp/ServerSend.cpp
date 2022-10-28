@@ -7,8 +7,8 @@
 
 #include <gtest/gtest.h>
 #include <thread>
-#include "Polymorph/Network/udp/Server.hpp"
-#include "Polymorph/Network/udp/Client.hpp"
+#include "polymorph/network/udp/Server.hpp"
+#include "polymorph/network/udp/Client.hpp"
 #include "../utils.hpp"
 
 TEST(udpE2E, ServerSend)

@@ -7,7 +7,7 @@
 
 
 #include <algorithm>
-#include "Polymorph/Network/tcp/ConnectionPool.hpp"
+#include "polymorph/network/tcp/ConnectionPool.hpp"
 #include "tcp/ClientConnection.hpp"
 
 void polymorph::network::tcp::ConnectionPool::join(std::shared_ptr<IClientConnection> connection)

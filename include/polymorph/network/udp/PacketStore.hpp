@@ -13,8 +13,8 @@
 #include <mutex>
 #include <asio/ip/udp.hpp>
 
-#include "Polymorph/Network/types.hpp"
-#include "Polymorph/Network/PacketHeader.hpp"
+#include "polymorph/network/types.hpp"
+#include "polymorph/network/PacketHeader.hpp"
 
 namespace polymorph::network::udp
 {

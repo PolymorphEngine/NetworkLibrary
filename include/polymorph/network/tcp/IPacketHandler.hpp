@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Polymorph/Network/PacketHeader.hpp"
+#include "polymorph/network/PacketHeader.hpp"
 #include <vector>
 
 namespace polymorph::network::tcp {

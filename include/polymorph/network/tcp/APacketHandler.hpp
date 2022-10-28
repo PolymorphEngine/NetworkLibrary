@@ -11,10 +11,10 @@
 #include <thread>
 #include <functional>
 #include <asio.hpp>
-#include "Polymorph/Network/PacketHeader.hpp"
-#include "Polymorph/Network/Packet.hpp"
-#include "Polymorph/Network/tcp/IPacketHandler.hpp"
-#include "Polymorph/Network/SerializerTrait.hpp"
+#include "polymorph/network/PacketHeader.hpp"
+#include "polymorph/network/Packet.hpp"
+#include "polymorph/network/tcp/IPacketHandler.hpp"
+#include "polymorph/network/SerializerTrait.hpp"
 
 namespace polymorph::network::tcp
 {

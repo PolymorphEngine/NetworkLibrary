@@ -7,7 +7,7 @@
 
 
 #include <iostream>
-#include "Polymorph/Network/udp/PacketStore.hpp"
+#include "polymorph/network/udp/PacketStore.hpp"
 #include "udp/SafePacketManager.hpp"
 
 

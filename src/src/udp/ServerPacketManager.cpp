@@ -5,8 +5,8 @@
 ** ServerPacketManager.cpp
 */
 
-#include "Polymorph/Network/udp/ServerPacketManager.hpp"
-#include "Polymorph/Network/udp/PacketStore.hpp"
+#include "polymorph/network/udp/ServerPacketManager.hpp"
+#include "polymorph/network/udp/PacketStore.hpp"
 
 bool polymorph::network::udp::ServerPacketManager::hasClient(const asio::ip::udp::endpoint& endpoint)
 {
