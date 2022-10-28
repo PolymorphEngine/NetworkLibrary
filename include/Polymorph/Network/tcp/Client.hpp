@@ -170,9 +170,6 @@ namespace polymorph::network::tcp
              */
             void _doReceive();
 
-            // TODO: remove ?
-            bool _broadcastReceivedPacket(const PacketHeader &header, const std::vector<std::byte> &bytes);
-
 
 //////////////////////--------------------------/////////////////////////
 

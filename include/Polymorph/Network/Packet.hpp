@@ -23,6 +23,11 @@ namespace polymorph::network
     struct Packet
     {
         PacketHeader header;
+
+        /**
+         * @property The packet payload, contains the data to send
+         * @tparam T The type of the payload
+         */
         T payload;
     }
 #ifdef _WIN32
