@@ -29,6 +29,7 @@ TEST(SerializerTrait, Packet)
     polymorph::network::PacketHeader header {0};
     uint8_t payload = 42;
     polymorph::network::Packet<uint8_t> packet;
+    header.pSize = sizeof(uint8_t);
     packet.header = header;
     packet.payload = payload;
     std::vector<std::byte> serialized = polymorph::network::SerializerTrait<polymorph::network::Packet<uint8_t>>::serialize(packet);
