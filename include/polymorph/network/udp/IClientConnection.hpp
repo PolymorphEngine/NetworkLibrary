@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <functional>
-#include "Polymorph/Network/PacketHeader.hpp"
+#include "polymorph/network/PacketHeader.hpp"
 
 namespace polymorph::network::tcp
 {

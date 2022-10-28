@@ -7,8 +7,8 @@
 
 
 #include <gtest/gtest.h>
-#include "Polymorph/Network/udp/ServerPacketManager.hpp"
-#include "Polymorph/Network/udp/Server.hpp"
+#include "polymorph/network/udp/ServerPacketManager.hpp"
+#include "polymorph/network/udp/Server.hpp"
 
 TEST(ServerPacketManagerTests, SimpleRegistering) {
     using namespace polymorph::network;

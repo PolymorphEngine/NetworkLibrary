@@ -8,7 +8,7 @@
 #pragma once
 
 #include <string>
-#include "Polymorph/Network/SerializerTrait.hpp"
+#include "polymorph/network/SerializerTrait.hpp"
 
 /**
  * @brief Message DTO that will be sent over the network

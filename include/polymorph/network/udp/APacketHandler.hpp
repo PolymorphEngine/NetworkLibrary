@@ -12,9 +12,9 @@
 #include <functional>
 #include <asio/ip/udp.hpp>
 #include <thread>
-#include "Polymorph/Network/udp/IPacketHandler.hpp"
-#include "Polymorph/Network/Packet.hpp"
-#include "Polymorph/Network/SerializerTrait.hpp"
+#include "polymorph/network/udp/IPacketHandler.hpp"
+#include "polymorph/network/Packet.hpp"
+#include "polymorph/network/SerializerTrait.hpp"
 
 namespace polymorph::network::udp
 {

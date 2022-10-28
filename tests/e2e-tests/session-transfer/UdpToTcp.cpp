@@ -6,13 +6,13 @@
 */
 
 #include <gtest/gtest.h>
-#include "Polymorph/Network/tcp/Server.hpp"
-#include "Polymorph/Network/tcp/Client.hpp"
+#include "polymorph/network/tcp/Server.hpp"
+#include "polymorph/network/tcp/Client.hpp"
 #include "../utils.hpp"
-#include "Polymorph/Network/dto/SessionTransferRequestDto.hpp"
-#include "Polymorph/Network/dto/SessionTransferResponseDto.hpp"
-#include "Polymorph/Network/udp/Server.hpp"
-#include "Polymorph/Network/udp/Client.hpp"
+#include "polymorph/network/dto/SessionTransferRequestDto.hpp"
+#include "polymorph/network/dto/SessionTransferResponseDto.hpp"
+#include "polymorph/network/udp/Server.hpp"
+#include "polymorph/network/udp/Client.hpp"
 
 TEST(sessionTransferE2E, UdpToTcp)
 {

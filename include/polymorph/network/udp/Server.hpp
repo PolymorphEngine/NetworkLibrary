@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include "Polymorph/Network/udp/APacketHandler.hpp"
-#include "Polymorph/Network/udp/ServerPacketManager.hpp"
-#include "Polymorph/Network/udp/PacketStore.hpp"
-#include "Polymorph/Network/udp/Connector.hpp"
-#include "Polymorph/Network/SessionStore.hpp"
+#include "polymorph/network/udp/APacketHandler.hpp"
+#include "polymorph/network/udp/ServerPacketManager.hpp"
+#include "polymorph/network/udp/PacketStore.hpp"
+#include "polymorph/network/udp/Connector.hpp"
+#include "polymorph/network/SessionStore.hpp"
 
 namespace polymorph::network::udp
 {

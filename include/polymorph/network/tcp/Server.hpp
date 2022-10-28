@@ -9,8 +9,8 @@
 #pragma once
 
 #include <iostream>
-#include "Polymorph/Network/tcp/APacketHandler.hpp"
-#include "Polymorph/Network/SessionStore.hpp"
+#include "polymorph/network/tcp/APacketHandler.hpp"
+#include "polymorph/network/SessionStore.hpp"
 #include "ConnectionPool.hpp"
 
 namespace polymorph::network::tcp

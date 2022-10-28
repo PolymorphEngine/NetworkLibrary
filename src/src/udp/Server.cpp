@@ -6,15 +6,15 @@
 */
 
 #include <iostream>
-#include "Polymorph/Network/udp/Server.hpp"
-#include "Polymorph/Network/dto/ConnectionDto.hpp"
+#include "polymorph/network/udp/Server.hpp"
+#include "polymorph/network/dto/ConnectionDto.hpp"
 #include "authorizationKey.hpp"
 #include "udp/SafePacketManager.hpp"
-#include "Polymorph/Network/dto/ConnectionResponseDto.hpp"
-#include "Polymorph/Network/exceptions/UnauthorizedException.hpp"
-#include "Polymorph/Network/dto/ACKDto.hpp"
-#include "Polymorph/Network/dto/SessionTransferRequestDto.hpp"
-#include "Polymorph/Network/dto/SessionTransferResponseDto.hpp"
+#include "polymorph/network/dto/ConnectionResponseDto.hpp"
+#include "polymorph/network/exceptions/UnauthorizedException.hpp"
+#include "polymorph/network/dto/ACKDto.hpp"
+#include "polymorph/network/dto/SessionTransferRequestDto.hpp"
+#include "polymorph/network/dto/SessionTransferResponseDto.hpp"
 
 polymorph::network::udp::Server::Server(std::uint16_t port, std::map<OpId, bool> safeties, SessionStore &sessionStore)
     : APacketHandler(asio::ip::udp::endpoint(asio::ip::udp::v4(), port)),

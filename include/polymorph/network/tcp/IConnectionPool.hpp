@@ -8,7 +8,7 @@
 #pragma once
 
 #include <memory>
-#include "Polymorph/Network/udp/IClientConnection.hpp"
+#include "polymorph/network/udp/IClientConnection.hpp"
 
 namespace polymorph::network::tcp
 {

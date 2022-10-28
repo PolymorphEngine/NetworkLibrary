@@ -6,7 +6,7 @@
 */
 
 
-#include "Polymorph/Network/tcp/Server.hpp"
+#include "polymorph/network/tcp/Server.hpp"
 #include "tcp/ClientConnection.hpp"
 
 polymorph::network::tcp::Server::Server(std::uint16_t port, polymorph::network::SessionStore &sessionStore)
