@@ -122,3 +122,8 @@ void polymorph::network::udp::Server::_handleSessionTransfer(const asio::ip::udp
 
     sendTo<SessionTransferResponseDto>(SessionTransferResponseDto::opId, response, packet.header.sId);
 }
+
+std::uint16_t polymorph::network::udp::Server::getRunningPort() const
+{
+    return _socket.local_endpoint().port();
+}

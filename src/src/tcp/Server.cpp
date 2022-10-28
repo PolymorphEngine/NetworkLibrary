@@ -38,3 +38,8 @@ polymorph::network::tcp::Server::~Server()
     if (!_context.stopped())
         _context.stop();
 }
+
+std::uint16_t polymorph::network::tcp::Server::getRunningPort() const
+{
+    return _acceptor.local_endpoint().port();
+}
