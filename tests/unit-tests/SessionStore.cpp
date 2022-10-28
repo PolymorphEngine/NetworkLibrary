@@ -168,3 +168,119 @@ TEST(SessionStoreTests, UdpExceptSessionStoreId)
     auto excepted = store.udpEndpointsOfExcept(session);
     ASSERT_EQ(excepted.size(), 2);
 }
+
+TEST(SessionStoreTests, Copy)
+{
+    using namespace polymorph::network;
+    SessionStore store;
+    auto endpoint1 = asio::ip::udp::endpoint(asio::ip::make_address_v4("127.0.0.1"), 1);
+    auto endpoint2 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.2"), 2);
+    auto endpoint3 = asio::ip::udp::endpoint(asio::ip::make_address_v4("127.0.0.3"), 3);
+    auto endpoint4 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.4"), 4);
+    auto session1 = store.registerClient(endpoint1);
+    auto session2 = store.registerClient(endpoint2);
+    auto session3 = store.registerClient(endpoint3);
+    auto session4 = store.registerClient(endpoint4);
+    SessionStore copy = store;
+    ASSERT_EQ(copy.sessionOf(endpoint1), session1);
+    ASSERT_EQ(copy.sessionOf(endpoint2), session2);
+    ASSERT_EQ(copy.sessionOf(endpoint3), session3);
+    ASSERT_EQ(copy.sessionOf(endpoint4), session4);
+}
+
+TEST(SessionStoreTests, CopyTcpSessions)
+{
+    using namespace polymorph::network;
+    SessionStore store;
+    SessionStore copy = store;
+    auto endpoint1 = asio::ip::udp::endpoint(asio::ip::make_address_v4("127.0.0.1"), 1);
+    auto endpoint2 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.2"), 2);
+    auto endpoint3 = asio::ip::udp::endpoint(asio::ip::make_address_v4("127.0.0.3"), 3);
+    auto endpoint4 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.4"), 4);
+    store.registerClient(endpoint1);
+    auto session2 = store.registerClient(endpoint2);
+    store.registerClient(endpoint3);
+    auto session4 = store.registerClient(endpoint4);
+    copy.copyTcpSessionsFrom(store);
+    ASSERT_EQ(copy.sessionOf(endpoint2), session2);
+    ASSERT_EQ(copy.sessionOf(endpoint4), session4);
+    try {
+        copy.sessionOf(endpoint1);
+        FAIL();
+    } catch (const exceptions::UnknownSessionException&) {}
+    try {
+        copy.sessionOf(endpoint3);
+        FAIL();
+    } catch (const exceptions::UnknownSessionException&) {}
+
+}
+
+TEST(SessionStoreTests, CopyUdpSessions)
+{
+    using namespace polymorph::network;
+    SessionStore store;
+    SessionStore copy = store;
+    auto endpoint1 = asio::ip::udp::endpoint(asio::ip::make_address_v4("127.0.0.1"), 1);
+    auto endpoint2 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.2"), 2);
+    auto endpoint3 = asio::ip::udp::endpoint(asio::ip::make_address_v4("127.0.0.3"), 3);
+    auto endpoint4 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.4"), 4);
+    auto session1 = store.registerClient(endpoint1);
+    store.registerClient(endpoint2);
+    auto session3 = store.registerClient(endpoint3);
+    store.registerClient(endpoint4);
+    copy.copyUdpSessionsFrom(store);
+    ASSERT_EQ(copy.sessionOf(endpoint1), session1);
+    ASSERT_EQ(copy.sessionOf(endpoint3), session3);
+    try {
+        copy.sessionOf(endpoint2);
+        FAIL();
+    } catch (const exceptions::UnknownSessionException&) {}
+    try {
+        copy.sessionOf(endpoint4);
+        FAIL();
+    } catch (const exceptions::UnknownSessionException&) {}
+}
+
+TEST(SessionStoreTests, CopyUdpAuthorizationKeys)
+{
+    using namespace polymorph::network;
+    SessionStore store;
+    SessionStore copy = store;
+    auto endpoint1 = asio::ip::udp::endpoint(asio::ip::make_address_v4("127.0.0.1"), 1);
+    auto endpoint2 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.2"), 2);
+    auto endpoint3 = asio::ip::udp::endpoint(asio::ip::make_address_v4("127.0.0.3"), 3);
+    auto endpoint4 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.4"), 4);
+    auto session2 = store.registerClient(endpoint2);
+    auto session4 = store.registerClient(endpoint4);
+    auto key2 = store.generateUdpAuthorizationKey(session2);
+    auto key4 = store.generateUdpAuthorizationKey(session4);
+    copy.copyUdpAuthorizationKeysFrom(store);
+    ASSERT_NO_THROW({
+        copy.registerAuthoredClient(endpoint1, session2, key2);
+    });
+    ASSERT_NO_THROW({
+        copy.registerAuthoredClient(endpoint3, session4, key4);
+    });
+}
+
+TEST(SessionStoreTests, CopyTcpAuthorizationKeys)
+{
+    using namespace polymorph::network;
+    SessionStore store;
+    SessionStore copy = store;
+    auto endpoint1 = asio::ip::udp::endpoint(asio::ip::make_address_v4("127.0.0.1"), 1);
+    auto endpoint2 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.2"), 2);
+    auto endpoint3 = asio::ip::udp::endpoint(asio::ip::make_address_v4("127.0.0.3"), 3);
+    auto endpoint4 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.4"), 4);
+    auto session1 = store.registerClient(endpoint1);
+    auto session3 = store.registerClient(endpoint3);
+    auto key1 = store.generateTcpAuthorizationKey(session1);
+    auto key3 = store.generateTcpAuthorizationKey(session3);
+    copy.copyTcpAuthorizationKeysFrom(store);
+    ASSERT_NO_THROW({
+        copy.registerAuthoredClient(endpoint2, session1, key1);
+    });
+    ASSERT_NO_THROW({
+        copy.registerAuthoredClient(endpoint4, session3, key3);
+    });
+}
