@@ -16,6 +16,10 @@
 namespace polymorph::network::tcp
 {
 
+    /**
+     * @class   TCP Server class
+     * @note    TCP exclusive
+     */
     class Server : public APacketHandler
     {
 
@@ -37,12 +41,18 @@ namespace polymorph::network::tcp
 
         private:
             /**
-             * @property The session store to assign session ids to new clients
+             * @property    The session store to assign session ids to new clients
              */
             SessionStore &_sessionStore;
 
+            /**
+             * @property    Connection Pool, responsible of the good behaviour of TCP sockets
+             */
             std::shared_ptr<ConnectionPool> _connectionPool;
 
+            /**
+             * @property    Asio TCP acceptor.
+             */
             asio::ip::tcp::acceptor _acceptor;
 
 
@@ -52,6 +62,9 @@ namespace polymorph::network::tcp
 
 /////////////////////////////// METHODS /////////////////////////////////
         public:
+            /**
+             * @brief Accept and start the network context
+             */
             void start();
 
             /**
@@ -60,6 +73,15 @@ namespace polymorph::network::tcp
              */
             std::uint16_t getRunningPort() const;
 
+            /**
+             * @brief   Send a payload to the server
+             *
+             * @tparam  T           The type of the payload to pack
+             * @param   opId        The operation id of the Packet
+             * @param   payload     The actual Packet data
+             * @param   sessionId   The destination SessionId for the packet
+             * @param   callback    Callback function used when the data has been (or not) delivered
+             */
             template<typename T>
             void sendTo(OpId opId, T &data, SessionId sessionId, std::function<void(const PacketHeader &, const T &)> callback = nullptr)
             {
@@ -84,6 +106,13 @@ namespace polymorph::network::tcp
                 });
             }
 
+            /**
+            * @brief   Send a payload to the server
+            *
+            * @tparam  T           The type of the payload to pack
+            * @param   opId        The operation id of the Packet
+            * @param   payload     The actual Packet data
+            */
             template<typename T>
             void send(OpId opId, T &data)
             {
@@ -104,6 +133,9 @@ namespace polymorph::network::tcp
 
 
         private:
+            /**
+             * @brief Accept clients to connect to the server
+             */
             void _doAccept();
 
 

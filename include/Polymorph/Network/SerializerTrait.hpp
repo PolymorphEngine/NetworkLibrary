@@ -28,6 +28,11 @@ namespace polymorph::network
     struct SerializerTrait<T, true>
     {
 
+        /**
+         * @brief Serialize an standard type to byte array
+         * @param data standard type
+         * @return Vector of byte containing the byte representation of the object
+         */
         static std::vector<std::byte> serialize(const T &data)
         {
             std::vector<std::byte> buffer(sizeof(T));
@@ -36,6 +41,11 @@ namespace polymorph::network
             return buffer;
         }
 
+        /**
+         * @brief Deserialize a standard type to byte array
+         * @param data Vector of byte containing a representation of
+         * @return Vector of byte containing the byte representation of the object
+         */
         static T deserialize(const std::vector<std::byte> &buffer)
         {
             T dto;
