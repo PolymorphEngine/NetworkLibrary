@@ -60,6 +60,12 @@ namespace polymorph::network::udp
         /////////////////////////////// METHODS /////////////////////////////////
         public:
         /**
+         * @brief get the port used by the server
+         * @return The port number
+         */
+        std::uint16_t getRunningPort() const;
+
+        /**
          * @brief Method called when an ack packet is received, it confirm the reception and discard the auto re-send feature for the packet
          * @param from The recipient of the initial packet
          * @param acknowledgedId The acknowledged packet id
