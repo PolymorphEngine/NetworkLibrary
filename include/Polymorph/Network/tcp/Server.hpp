@@ -54,6 +54,12 @@ namespace polymorph::network::tcp
         public:
             void start();
 
+            /**
+             * @brief get the port used by the server
+             * @return The port number
+             */
+            std::uint16_t getRunningPort() const;
+
             template<typename T>
             void sendTo(OpId opId, T &data, SessionId sessionId, std::function<void(const PacketHeader &, const T &)> callback = nullptr)
             {
