@@ -46,10 +46,13 @@ namespace polymorph::network::udp
             ServerPacketManager _packetManager;
 
             /**
-             * @brief The session store used to manage the sessions
+             * @property The session store used to manage the sessions
              */
             SessionStore &_sessionStore;
 
+            /**
+             * @property The safeties map used to determine if a packet require ack or not
+             */
             std::map<OpId, bool> _safeties;
 
 
@@ -70,7 +73,7 @@ namespace polymorph::network::udp
          * @param from The recipient of the initial packet
          * @param acknowledgedId The acknowledged packet id
          */
-        void ackReceived(const asio::ip::udp::endpoint& from, PacketId acknowledgedId);
+        void ackReceived(const asio::ip::udp::endpoint& from, PacketId acknowledgedId) override;
 
         /**
          * @brief Method called when a packet is sent, it confirms the sent and enable the auto re-send feature for safe packets
