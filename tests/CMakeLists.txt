@@ -6,6 +6,7 @@ file(GLOB_RECURSE E2E_TESTS_SRCS e2e-tests/*.cpp)
 
 add_executable(test-exec main.cpp)
 target_link_libraries(test-exec PRIVATE PolymorphNetwork)
+set_target_properties(test-exec PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
 add_executable(unit-tests ${UNIT_TESTS_SRCS})
 target_link_libraries(unit-tests PRIVATE PolymorphNetwork GTest::gtest_main)
