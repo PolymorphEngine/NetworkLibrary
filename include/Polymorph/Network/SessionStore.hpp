@@ -83,6 +83,14 @@ namespace polymorph::network
 
 /////////////////////////////// METHODS /////////////////////////////////
         public:
+            void copyTcpSessionsFrom(SessionStore &other);
+
+            void copyUdpSessionsFrom(SessionStore &other);
+
+            void copyTcpAuthorizationKeysFrom(SessionStore &other);
+
+            void copyUdpAuthorizationKeysFrom(SessionStore &other);
+
             /**
              * @brief Register a client with a specific sessionId from an endpoint (UDP)
              * @throws UnauthorizedException if the authorization key is not valid

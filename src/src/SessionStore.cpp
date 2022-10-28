@@ -195,3 +195,43 @@ polymorph::network::SessionStore::SessionStore(const polymorph::network::Session
 {
 
 }
+
+void polymorph::network::SessionStore::copyTcpSessionsFrom(polymorph::network::SessionStore &other)
+{
+    std::lock_guard<std::mutex> lock(_tcpSessionsMutex);
+    std::lock_guard<std::mutex> lock2(other._tcpSessionsMutex);
+
+    std::copy_if(other._tcpSessions.begin(), other._tcpSessions.end(), std::inserter(_tcpSessions, _tcpSessions.end()), [this](auto &pair) {
+        return !_tcpSessions.contains(pair.first);
+    });
+}
+
+void polymorph::network::SessionStore::copyUdpSessionsFrom(polymorph::network::SessionStore &other)
+{
+    std::lock_guard<std::mutex> lock(_udpSessionsMutex);
+    std::lock_guard<std::mutex> lock2(other._udpSessionsMutex);
+
+    std::copy_if(other._udpSessions.begin(), other._udpSessions.end(), std::inserter(_udpSessions, _udpSessions.end()), [this](auto &pair) {
+        return !_udpSessions.contains(pair.first);
+    });
+}
+
+void polymorph::network::SessionStore::copyTcpAuthorizationKeysFrom(polymorph::network::SessionStore &other)
+{
+    std::lock_guard<std::mutex> lock(_tcpSessionsAuthorizationKeysMutex);
+    std::lock_guard<std::mutex> lock2(other._tcpSessionsAuthorizationKeysMutex);
+
+    std::copy_if(other._tcpSessionsAuthorizationKeys.begin(), other._tcpSessionsAuthorizationKeys.end(), std::inserter(_tcpSessionsAuthorizationKeys, _tcpSessionsAuthorizationKeys.end()), [this](auto &pair) {
+        return !_tcpSessionsAuthorizationKeys.contains(pair.first);
+    });
+}
+
+void polymorph::network::SessionStore::copyUdpAuthorizationKeysFrom(polymorph::network::SessionStore &other)
+{
+    std::lock_guard<std::mutex> lock(_udpSessionsAuthorizationKeysMutex);
+    std::lock_guard<std::mutex> lock2(other._udpSessionsAuthorizationKeysMutex);
+
+    std::copy_if(other._udpSessionsAuthorizationKeys.begin(), other._udpSessionsAuthorizationKeys.end(), std::inserter(_udpSessionsAuthorizationKeys, _udpSessionsAuthorizationKeys.end()), [this](auto &pair) {
+        return !_udpSessionsAuthorizationKeys.contains(pair.first);
+    });
+}
