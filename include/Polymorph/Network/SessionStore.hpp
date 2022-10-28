@@ -24,6 +24,10 @@ namespace polymorph::network
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
+            SessionStore() = default;
+            SessionStore(const SessionStore &);
+
+            ~SessionStore() = default;
 
 
 //////////////////////--------------------------/////////////////////////

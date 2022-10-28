@@ -188,3 +188,10 @@ polymorph::network::SessionId polymorph::network::SessionStore::_findAvailableUd
         ++i;
     return i;
 }
+
+polymorph::network::SessionStore::SessionStore(const polymorph::network::SessionStore &other)
+    : _udpSessions(other._udpSessions), _tcpSessions(other._tcpSessions),
+    _udpSessionsAuthorizationKeys(other._udpSessionsAuthorizationKeys), _tcpSessionsAuthorizationKeys(other._tcpSessionsAuthorizationKeys)
+{
+
+}
