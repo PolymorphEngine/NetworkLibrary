@@ -9,13 +9,13 @@
 #include <iostream>
 #include <utility>
 #include "tcp/ClientConnection.hpp"
-#include "Polymorph/Network/SerializerTrait.hpp"
-#include "Polymorph/Network/dto/ConnectionDto.hpp"
+#include "polymorph/network/SerializerTrait.hpp"
+#include "polymorph/network/dto/ConnectionDto.hpp"
 #include "authorizationKey.hpp"
-#include "Polymorph/Network/dto/ConnectionResponseDto.hpp"
-#include "Polymorph/Network/exceptions/UnauthorizedException.hpp"
-#include "Polymorph/Network/dto/SessionTransferRequestDto.hpp"
-#include "Polymorph/Network/dto/SessionTransferResponseDto.hpp"
+#include "polymorph/network/dto/ConnectionResponseDto.hpp"
+#include "polymorph/network/exceptions/UnauthorizedException.hpp"
+#include "polymorph/network/dto/SessionTransferRequestDto.hpp"
+#include "polymorph/network/dto/SessionTransferResponseDto.hpp"
 
 
 polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, Server &packetHandler)

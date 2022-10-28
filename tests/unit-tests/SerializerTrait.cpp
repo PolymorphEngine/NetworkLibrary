@@ -6,7 +6,7 @@
 */
 
 #include <gtest/gtest.h>
-#include "Polymorph/Network/SerializerTrait.hpp"
+#include "polymorph/network/SerializerTrait.hpp"
 
 TEST(SerializerTrait, PacketHeader)
 {

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Polymorph/Network/types.hpp"
+#include "polymorph/network/types.hpp"
 
 namespace polymorph::network
 {
@@ -15,9 +15,10 @@ namespace polymorph::network
 #ifdef _WIN32
 #pragma pack(push, 1)
 #endif
-    struct SessionTransferRequestDto
+    struct SessionTransferResponseDto
     {
         static constexpr OpId opId = 2;
+        AuthorizationKey authKey;
     }
 #ifdef _WIN32
         ;

@@ -10,7 +10,7 @@
 
 #include <cstring>
 #include <vector>
-#include "Polymorph/Network/types.hpp"
+#include "polymorph/network/types.hpp"
 
 namespace polymorph::network
 {

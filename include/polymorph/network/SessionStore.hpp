@@ -13,7 +13,7 @@
 #include <mutex>
 #include "asio/ip/tcp.hpp"
 #include "asio/ip/udp.hpp"
-#include "Polymorph/Network/types.hpp"
+#include "polymorph/network/types.hpp"
 
 namespace polymorph::network
 {

@@ -7,9 +7,9 @@
 
 #include <iostream>
 #include <mutex>
-#include "Polymorph/Network/udp/Connector.hpp"
-#include "Polymorph/Network/SerializerTrait.hpp"
-#include "Polymorph/Network/dto/ACKDto.hpp"
+#include "polymorph/network/udp/Connector.hpp"
+#include "polymorph/network/SerializerTrait.hpp"
+#include "polymorph/network/dto/ACKDto.hpp"
 
 polymorph::network::udp::Connector::Connector(polymorph::network::udp::IPacketHandler &handler)
     : _packetHandler(handler), _socket(handler.getPreparedSocket()), _receiveBuffer(), _writeInProgress(false)

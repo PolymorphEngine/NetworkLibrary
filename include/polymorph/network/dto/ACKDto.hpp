@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Polymorph/Network/types.hpp"
+#include "polymorph/network/types.hpp"
 
 namespace polymorph::network
 {
@@ -16,24 +16,19 @@ namespace polymorph::network
 #pragma pack(push, 1)
 #endif
     /**
-     * @struct Data transfer object for the incoming connection packet
+     * @struct Data transfer object for the ACK packet
      */
-    struct ConnectionDto
+    struct ACKDto
     {
         /**
          * @property The packet operation code
          */
-        static constexpr OpId opId = 0;
+        static constexpr OpId opId = 1;
 
         /**
-         * @property The session identifier, used to identify the remote connection
+         * @property The packet identifier
          */
-        SessionId sessionId;
-
-        /**
-         * @property The authentication token, used as proof of identity
-         */
-        AuthorizationKey authKey;
+        PacketId id;
     }
 #ifdef _WIN32
         ;

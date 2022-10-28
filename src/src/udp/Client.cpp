@@ -7,12 +7,12 @@
 
 
 #include <iostream>
-#include "Polymorph/Network/udp/Client.hpp"
-#include "Polymorph/Network/dto/ConnectionDto.hpp"
-#include "Polymorph/Network/dto/ConnectionResponseDto.hpp"
-#include "Polymorph/Network/dto/ACKDto.hpp"
+#include "polymorph/network/udp/Client.hpp"
+#include "polymorph/network/dto/ConnectionDto.hpp"
+#include "polymorph/network/dto/ConnectionResponseDto.hpp"
+#include "polymorph/network/dto/ACKDto.hpp"
 #include "udp/SafePacketManager.hpp"
-#include "Polymorph/Network/dto/SessionTransferRequestDto.hpp"
+#include "polymorph/network/dto/SessionTransferRequestDto.hpp"
 
 
 polymorph::network::udp::Client::Client(std::string host, std::uint16_t port, std::map<OpId, bool> safeties)

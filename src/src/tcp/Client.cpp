@@ -6,9 +6,9 @@
 */
 
 
-#include "Polymorph/Network/tcp/Client.hpp"
-#include "Polymorph/Network/dto/ConnectionDto.hpp"
-#include "Polymorph/Network/dto/ConnectionResponseDto.hpp"
+#include "polymorph/network/tcp/Client.hpp"
+#include "polymorph/network/dto/ConnectionDto.hpp"
+#include "polymorph/network/dto/ConnectionResponseDto.hpp"
 
 polymorph::network::tcp::Client::Client(std::string host, std::uint16_t port)
         : _serverEndpoint(asio::ip::make_address_v4(host), port), _socket(_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 0))

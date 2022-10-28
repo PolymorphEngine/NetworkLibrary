@@ -6,9 +6,9 @@
 */
 
 #include <iostream>
-#include "Polymorph/Network/tcp/APacketHandler.hpp"
-#include "Polymorph/Network/SerializerTrait.hpp"
-#include "Polymorph/Network/exceptions/DeserializingException.hpp"
+#include "polymorph/network/tcp/APacketHandler.hpp"
+#include "polymorph/network/SerializerTrait.hpp"
+#include "polymorph/network/exceptions/DeserializingException.hpp"
 
 polymorph::network::tcp::APacketHandler::~APacketHandler()
 {

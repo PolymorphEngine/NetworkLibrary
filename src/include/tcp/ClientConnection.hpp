@@ -11,11 +11,11 @@
 #include <memory>
 #include <asio/ip/udp.hpp>
 #include <queue>
-#include "Polymorph/Network/SessionStore.hpp"
-#include "Polymorph/Network/PacketHeader.hpp"
-#include "Polymorph/Network/tcp/IConnectionPool.hpp"
-#include "Polymorph/Network/tcp/IPacketHandler.hpp"
-#include "Polymorph/Network/tcp/Server.hpp"
+#include "polymorph/network/SessionStore.hpp"
+#include "polymorph/network/PacketHeader.hpp"
+#include "polymorph/network/tcp/IConnectionPool.hpp"
+#include "polymorph/network/tcp/IPacketHandler.hpp"
+#include "polymorph/network/tcp/Server.hpp"
 
 namespace polymorph::network::tcp
 {
