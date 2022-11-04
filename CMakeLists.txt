@@ -16,9 +16,11 @@ if (NOT TARGET PolymorphNetwork)
     file(GLOB_RECURSE ICLS include/*.hpp)
     file(GLOB_RECURSE PRIV_ICLS src/include/*.hpp)
 
+    get_target_property(asio-icls asio INTERFACE_INCLUDE_DIRECTORIES)
+
     add_library(PolymorphNetwork ${SRCS} ${ICLS} ${PRIV_ICLS})
     target_include_directories(PolymorphNetwork PUBLIC include)
-    target_include_directories(PolymorphNetwork PRIVATE src/include)
+    target_include_directories(PolymorphNetwork PRIVATE src/include ${asio-icls})
     set_target_properties(PolymorphNetwork PROPERTIES POSITION_INDEPENDENT_CODE ON)
     target_link_libraries(PolymorphNetwork asio)
     if(WIN32)
