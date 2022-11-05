@@ -8,9 +8,7 @@
 
 #pragma once
 
-#include "APacketHandler.hpp"
-#include "polymorph/network/udp/PacketStore.hpp"
-#include "polymorph/network/udp/AConnector.hpp"
+#include "polymorph/network/udp/IPacketHandler.hpp"
 #include "polymorph/network/dto/ACKDto.hpp"
 
 namespace polymorph::network::udp

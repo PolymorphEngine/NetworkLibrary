@@ -8,7 +8,7 @@
 
 #include <asio/ip/udp.hpp>
 #include <iostream>
-#include "polymorph/network/udp/APacketHandler.hpp"
+#include "udp/APacketHandler.hpp"
 
 polymorph::network::udp::APacketHandler::APacketHandler(asio::ip::udp::endpoint endpoint)
     : _context(), _socket(_context, endpoint)

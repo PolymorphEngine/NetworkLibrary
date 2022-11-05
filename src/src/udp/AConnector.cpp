@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <mutex>
-#include "polymorph/network/udp/AConnector.hpp"
+#include "udp/AConnector.hpp"
 #include "polymorph/network/SerializerTrait.hpp"
 #include "polymorph/network/dto/ACKDto.hpp"
 

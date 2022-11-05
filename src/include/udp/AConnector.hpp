@@ -11,7 +11,7 @@
 #include <asio/io_context.hpp>
 #include <queue>
 #include <vector>
-#include "polymorph/network/udp/IPacketReceiver.hpp"
+#include "udp/IPacketReceiver.hpp"
 
 namespace polymorph::network::udp {
 

@@ -6,7 +6,7 @@
 */
 
 #include <iostream>
-#include "polymorph/network/udp/ServerImpl.hpp"
+#include "udp/ServerImpl.hpp"
 #include "polymorph/network/dto/ConnectionDto.hpp"
 #include "authorizationKey.hpp"
 #include "udp/SafePacketManager.hpp"

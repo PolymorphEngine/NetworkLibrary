@@ -10,7 +10,6 @@
 
 #include <map>
 #include <memory>
-
 #include "polymorph/network/udp/IPacketHandler.hpp"
 
 namespace polymorph::network { class SessionStore; }

@@ -7,7 +7,7 @@
 
 
 #include <iostream>
-#include "polymorph/network/udp/ClientImpl.hpp"
+#include "udp/ClientImpl.hpp"
 #include "polymorph/network/dto/ConnectionDto.hpp"
 #include "polymorph/network/dto/ConnectionResponseDto.hpp"
 #include "polymorph/network/dto/ACKDto.hpp"

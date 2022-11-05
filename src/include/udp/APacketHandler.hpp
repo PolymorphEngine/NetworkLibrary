@@ -13,10 +13,10 @@
 #include <asio/ip/udp.hpp>
 #include <thread>
 #include <utility>
-#include "polymorph/network/udp/IPacketReceiver.hpp"
+#include "udp/IPacketReceiver.hpp"
 #include "polymorph/network/Packet.hpp"
 #include "polymorph/network/SerializerTrait.hpp"
-#include "IPacketHandler.hpp"
+#include "polymorph/network/udp/IPacketHandler.hpp"
 
 namespace polymorph::network::udp
 {
