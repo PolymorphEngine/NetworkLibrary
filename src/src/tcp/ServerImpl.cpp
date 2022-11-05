@@ -6,7 +6,7 @@
 */
 
 
-#include "polymorph/network/tcp/ServerImpl.hpp"
+#include "tcp/ServerImpl.hpp"
 #include "tcp/ClientConnection.hpp"
 
 std::unique_ptr<polymorph::network::tcp::Server> polymorph::network::tcp::Server::create(std::uint16_t port)

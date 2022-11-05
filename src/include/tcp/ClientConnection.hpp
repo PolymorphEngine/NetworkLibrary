@@ -13,10 +13,10 @@
 #include <queue>
 #include "polymorph/network/SessionStore.hpp"
 #include "polymorph/network/PacketHeader.hpp"
-#include "polymorph/network/tcp/IConnectionPool.hpp"
-#include "polymorph/network/tcp/IPacketReceiver.hpp"
+#include "tcp/IConnectionPool.hpp"
+#include "tcp/IPacketReceiver.hpp"
 #include "polymorph/network/tcp/Server.hpp"
-#include "polymorph/network/tcp/ServerImpl.hpp"
+#include "tcp/ServerImpl.hpp"
 
 namespace polymorph::network::tcp
 {

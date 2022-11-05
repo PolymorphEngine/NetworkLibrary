@@ -6,7 +6,7 @@
 */
 
 
-#include "polymorph/network/tcp/ClientImpl.hpp"
+#include "tcp/ClientImpl.hpp"
 #include "polymorph/network/dto/ConnectionDto.hpp"
 #include "polymorph/network/dto/ConnectionResponseDto.hpp"
 

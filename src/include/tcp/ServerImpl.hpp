@@ -9,10 +9,10 @@
 #pragma once
 
 #include <iostream>
-#include "polymorph/network/tcp/PacketHandler.hpp"
+#include "tcp/PacketHandler.hpp"
 #include "polymorph/network/SessionStore.hpp"
 #include "ConnectionPool.hpp"
-#include "Server.hpp"
+#include "polymorph/network/tcp/Server.hpp"
 
 namespace polymorph::network::tcp
 {

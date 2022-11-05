@@ -6,7 +6,7 @@
 */
 
 #include <iostream>
-#include "polymorph/network/tcp/PacketHandler.hpp"
+#include "tcp/PacketHandler.hpp"
 #include "polymorph/network/SerializerTrait.hpp"
 #include "polymorph/network/exceptions/DeserializingException.hpp"
 

@@ -12,7 +12,7 @@
 #include <iostream>
 #include "PacketHandler.hpp"
 #include "polymorph/network/dto/ACKDto.hpp"
-#include "Client.hpp"
+#include "polymorph/network/tcp/Client.hpp"
 
 namespace polymorph::network::tcp
 {

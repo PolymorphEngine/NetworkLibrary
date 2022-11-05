@@ -13,9 +13,9 @@
 #include <asio.hpp>
 #include "polymorph/network/PacketHeader.hpp"
 #include "polymorph/network/Packet.hpp"
-#include "polymorph/network/tcp/IPacketReceiver.hpp"
+#include "tcp/IPacketReceiver.hpp"
 #include "polymorph/network/SerializerTrait.hpp"
-#include "IPacketHandler.hpp"
+#include "polymorph/network/tcp/IPacketHandler.hpp"
 
 namespace polymorph::network::tcp
 {
