@@ -29,20 +29,20 @@ TEST(tcpE2E, ClientSend)
     });
 
     // Client Setup
-    Client client("127.0.0.1", 4242);
+    auto client = Client::create("127.0.0.1", 4242);
 
     // Client Infos
     SessionId id;
     bool connected = false;
 
-    client.connect([&id, &connected](bool authorized, SessionId sId) {
+    client->connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
         id = sId;
     });
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    client.send(3, input_data);
+    client->send(3, input_data);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_data, output_data);
 }
@@ -66,20 +66,20 @@ TEST(tcpE2E, ClientSendCallback)
     });
 
     // Client Setup
-    Client client("127.0.0.1", 4242);
+    auto client = Client::create("127.0.0.1", 4242);
 
     // Client Infos
     SessionId id;
     bool connected = false;
 
-    client.connect([&id, &connected](bool authorized, SessionId sId) {
+    client->connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
         id = sId;
     });
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    client.send<std::uint16_t>(3, input_data, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
+    client->send<std::uint16_t>(3, input_data, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
         passed = true;
     });
     // server.sendTo(2, input_data, id); NOT WORKING LA PTN DE SA

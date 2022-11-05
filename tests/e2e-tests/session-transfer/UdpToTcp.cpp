@@ -65,12 +65,12 @@ TEST(sessionTransferE2E, UdpToTcp)
     tcpServer->start();
 
     // Client Setup
-    tcp::Client tcpClient("127.0.0.1", 4242);
+    auto tcpClient = tcp::Client::create("127.0.0.1", 4242);
 
     bool tcpConnected = false;
 
 
-    tcpClient.connectWithSession(id, authKey, [&tcpConnected](bool authorized, SessionId sId) {
+    tcpClient->connectWithSession(id, authKey, [&tcpConnected](bool authorized, SessionId sId) {
         tcpConnected = true;
     });
 

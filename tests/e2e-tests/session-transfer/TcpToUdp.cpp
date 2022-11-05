@@ -27,7 +27,7 @@ auto tcpServer = tcp::Server::create(4242);
 tcpServer->start();
 
 // Client Setup
-tcp::Client tcpClient("127.0.0.1", 4242);
+auto tcpClient = tcp::Client::create("127.0.0.1", 4242);
 
 // Client Infos
 SessionId id;
@@ -36,19 +36,19 @@ bool tcpConnected = false;
 std::atomic<bool> authKeyReceived(false);
 AuthorizationKey authKey;
 
-tcpClient.connect([&id, &tcpConnected](bool authorized, SessionId sId) {
+tcpClient->connect([&id, &tcpConnected](bool authorized, SessionId sId) {
     id = sId;
     tcpConnected = true;
 });
 
 PNL_WAIT_COND_LOOP(!tcpConnected, PNL_TIME_OUT, 5)
 ASSERT_TRUE(tcpConnected);
-tcpClient.registerReceiveHandler<SessionTransferResponseDto>(SessionTransferResponseDto::opId, [&authKey, &authKeyReceived](const PacketHeader &, const SessionTransferResponseDto &response) {
+tcpClient->registerReceiveHandler<SessionTransferResponseDto>(SessionTransferResponseDto::opId, [&authKey, &authKeyReceived](const PacketHeader &, const SessionTransferResponseDto &response) {
     authKey = response.authKey;
     authKeyReceived = true;
     return true;
 });
-tcpClient.send(SessionTransferRequestDto::opId, request);
+tcpClient->send(SessionTransferRequestDto::opId, request);
 PNL_WAIT(PNL_TIME_OUT)
 ASSERT_TRUE(authKeyReceived);
 
