@@ -31,7 +31,7 @@ polymorph::network::udp::APacketHandler::~APacketHandler()
     }
 }
 
-void polymorph::network::udp::APacketHandler::packetReceived(const asio::ip::udp::endpoint& from, const std::vector<std::byte> &bytes)
+void polymorph::network::udp::APacketHandler::_packetReceived(const asio::ip::udp::endpoint& from, const std::vector<std::byte> &bytes)
 {
     PacketHeader header {0};
 
@@ -45,12 +45,7 @@ void polymorph::network::udp::APacketHandler::packetReceived(const asio::ip::udp
     _broadcastReceivedPacket(header, bytes);
 }
 
-asio::ip::udp::socket &polymorph::network::udp::APacketHandler::getPreparedSocket()
-{
-    return _socket;
-}
-
-void polymorph::network::udp::APacketHandler::start()
+void polymorph::network::udp::APacketHandler::_run()
 {
     _thread = std::thread([this]() {
         _context.run();
@@ -62,13 +57,8 @@ void polymorph::network::udp::APacketHandler::unregisterReceiveHandlers(polymorp
     _receiveCallbacks.erase(opId);
 }
 
-void polymorph::network::udp::APacketHandler::setConnector(std::shared_ptr<Connector> connector)
-{
-    _connector = std::move(connector);
-}
-
 void polymorph::network::udp::APacketHandler::_callAndPopSendCallback(const asio::ip::udp::endpoint& to,
-        const polymorph::network::PacketHeader &header, const std::vector<std::byte> &bytes)
+                                                                      const polymorph::network::PacketHeader &header, const std::vector<std::byte> &bytes)
 {
     auto it = _sentCallbacks.find(std::make_pair(to, header.pId));
 
@@ -79,11 +69,16 @@ void polymorph::network::udp::APacketHandler::_callAndPopSendCallback(const asio
 }
 
 void polymorph::network::udp::APacketHandler::_broadcastReceivedPacket(const polymorph::network::PacketHeader &header,
-        const std::vector<std::byte> &bytes)
+                                                                       const std::vector<std::byte> &bytes)
 {
     if (_receiveCallbacks.contains(header.opId)) {
         for (auto &callback : _receiveCallbacks[header.opId]) {
             callback(header, bytes);
         }
     }
+}
+
+void polymorph::network::udp::APacketHandler::_registerReceiveHandler(polymorph::network::OpId opId, std::function<void(const PacketHeader &, const std::vector<std::byte> &)> handler)
+{
+    _receiveCallbacks[opId].emplace_back(std::move(handler));
 }

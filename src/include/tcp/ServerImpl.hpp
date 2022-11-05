@@ -21,7 +21,7 @@ namespace polymorph::network::tcp
      * @class   TCP ServerImpl class
      * @note    TCP exclusive
      */
-    class ServerImpl : public Server, virtual public PacketHandler
+    class ServerImpl : public Server, virtual public APacketHandler
     {
 
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////

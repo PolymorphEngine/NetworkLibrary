@@ -1,12 +1,12 @@
 /*
 ** EPITECH PROJECT, 2022
-** Server.cpp
+** ServerImpl.cpp
 ** File description:
-** Server.cpp
+** ServerImpl.cpp
 */
 
 #include <iostream>
-#include "polymorph/network/udp/Server.hpp"
+#include "polymorph/network/udp/ServerImpl.hpp"
 #include "polymorph/network/dto/ConnectionDto.hpp"
 #include "authorizationKey.hpp"
 #include "udp/SafePacketManager.hpp"
@@ -16,11 +16,15 @@
 #include "polymorph/network/dto/SessionTransferRequestDto.hpp"
 #include "polymorph/network/dto/SessionTransferResponseDto.hpp"
 
-polymorph::network::udp::Server::Server(std::uint16_t port, std::map<OpId, bool> safeties, SessionStore &sessionStore)
+std::unique_ptr<polymorph::network::udp::Server> polymorph::network::udp::Server::create(uint16_t port, std::map<OpId, bool> safeties)
+{
+    return std::make_unique<ServerImpl>(port, safeties);
+}
+polymorph::network::udp::ServerImpl::ServerImpl(std::uint16_t port, std::map<OpId, bool> safeties)
     : APacketHandler(asio::ip::udp::endpoint(asio::ip::udp::v4(), port)),
-        _packetManager(_context, safeties,
+      _packetManager(_context, safeties,
             [this](std::shared_ptr<SafePacketManager> manager) {
-                _socket.async_send_to(asio::buffer(manager->sPacket), manager->endpoint,
+                APacketHandler::_socket.async_send_to(asio::buffer(manager->sPacket), manager->endpoint,
                     [manager](const asio::error_code &error, std::size_t) {
                         if (error) {
                             std::cerr << "Error while sending packet: " << error.message() << std::endl;
@@ -30,16 +34,16 @@ polymorph::network::udp::Server::Server(std::uint16_t port, std::map<OpId, bool>
                 );
             }
         ),
-        _safeties(std::move(safeties)),
-        _sessionStore(sessionStore)
+      AConnector(APacketHandler::_socket),
+      _safeties(std::move(safeties))
 {
     _safeties[ConnectionResponseDto::opId] = true;
     _safeties[ACKDto::opId] = false;
     _safeties[SessionTransferResponseDto::opId] = true;
 }
 
-void polymorph::network::udp::Server::ackReceived(const asio::ip::udp::endpoint &from,
-                                                  polymorph::network::PacketId acknowledgedId)
+void polymorph::network::udp::ServerImpl::_ackReceived(const asio::ip::udp::endpoint &from,
+                                                   polymorph::network::PacketId acknowledgedId)
 {
     if (!_packetManager.hasClient(from)) {
         std::cerr << "Received ack from unknown client!" << std::endl;
@@ -48,9 +52,9 @@ void polymorph::network::udp::Server::ackReceived(const asio::ip::udp::endpoint 
     _packetManager.storeOf(from).confirmReceived(acknowledgedId);
 }
 
-void polymorph::network::udp::Server::packetSent(const asio::ip::udp::endpoint &to,
-                                                 const polymorph::network::PacketHeader &header,
-                                                 const std::vector<std::byte>&bytes)
+void polymorph::network::udp::ServerImpl::_packetSent(const asio::ip::udp::endpoint &to,
+                                                  const polymorph::network::PacketHeader &header,
+                                                  const std::vector<std::byte>&bytes)
 {
     if (!_packetManager.hasClient(to)) {
         std::cerr << "Sent packet to unknown client!" << std::endl;
@@ -60,7 +64,7 @@ void polymorph::network::udp::Server::packetSent(const asio::ip::udp::endpoint &
     _packetManager.storeOf(to).confirmSent(to, header.pId);
 }
 
-void polymorph::network::udp::Server::_onPacketReceived(const asio::ip::udp::endpoint &from,
+void polymorph::network::udp::ServerImpl::_onPacketReceived(const asio::ip::udp::endpoint &from,
                                                         const polymorph::network::PacketHeader &header,
                                                         const std::vector<std::byte> &bytes)
 {
@@ -72,7 +76,7 @@ void polymorph::network::udp::Server::_onPacketReceived(const asio::ip::udp::end
         _sendAckPacket(from, header);
 }
 
-void polymorph::network::udp::Server::_handleConnectionHandshake(const asio::ip::udp::endpoint &from,
+void polymorph::network::udp::ServerImpl::_handleConnectionHandshake(const asio::ip::udp::endpoint &from,
                                                                  const polymorph::network::PacketHeader&,
                                                                  const std::vector<std::byte> &bytes)
 {
@@ -105,14 +109,14 @@ void polymorph::network::udp::Server::_handleConnectionHandshake(const asio::ip:
     }
 }
 
-void polymorph::network::udp::Server::_sendAckPacket(const asio::ip::udp::endpoint &from,
+void polymorph::network::udp::ServerImpl::_sendAckPacket(const asio::ip::udp::endpoint &from,
     const polymorph::network::PacketHeader &header)
 {
     ACKDto ack{ .id = header.pId};
     sendTo<ACKDto>(ACKDto::opId, ack, _sessionStore.sessionOf(from));
 }
 
-void polymorph::network::udp::Server::_handleSessionTransfer(const asio::ip::udp::endpoint &from,
+void polymorph::network::udp::ServerImpl::_handleSessionTransfer(const asio::ip::udp::endpoint &from,
                                                              const polymorph::network::PacketHeader &header,
                                                              const std::vector<std::byte> &bytes)
 {
@@ -123,7 +127,70 @@ void polymorph::network::udp::Server::_handleSessionTransfer(const asio::ip::udp
     sendTo<SessionTransferResponseDto>(SessionTransferResponseDto::opId, response, packet.header.sId);
 }
 
-std::uint16_t polymorph::network::udp::Server::getRunningPort() const
+std::uint16_t polymorph::network::udp::ServerImpl::getRunningPort() const
 {
-    return _socket.local_endpoint().port();
+    return APacketHandler::_socket.local_endpoint().port();
+}
+
+void polymorph::network::udp::ServerImpl::start()
+{
+    startConnection();
+    _run();
+}
+
+polymorph::network::SessionStore *polymorph::network::udp::ServerImpl::getSessionStore()
+{
+    return &_sessionStore;
+}
+
+void polymorph::network::udp::ServerImpl::setSessionStore(polymorph::network::SessionStore *sessionStore)
+{
+    _sessionStore = *sessionStore;
+}
+
+void polymorph::network::udp::ServerImpl::copyTcpSessionsFrom(polymorph::network::SessionStore *other)
+{
+    _sessionStore.copyTcpSessionsFrom(*other);
+}
+
+void polymorph::network::udp::ServerImpl::copyUdpSessionsFrom(polymorph::network::SessionStore *other)
+{
+    _sessionStore.copyUdpSessionsFrom(*other);
+}
+
+void polymorph::network::udp::ServerImpl::copyTcpAuthorizationKeysFrom(polymorph::network::SessionStore *other)
+{
+    _sessionStore.copyTcpAuthorizationKeysFrom(*other);
+}
+
+void polymorph::network::udp::ServerImpl::copyUdpAuthorizationKeysFrom(polymorph::network::SessionStore *other)
+{
+    _sessionStore.copyUdpAuthorizationKeysFrom(*other);
+}
+
+void polymorph::network::udp::ServerImpl::_sendTo(polymorph::network::OpId opId, const std::vector<std::byte> &data, polymorph::network::SessionId sessionId,
+        std::function<void(const PacketHeader &, const std::vector<std::byte> &)> callback)
+{
+    auto endpoint = _sessionStore.udpEndpointOf(sessionId);
+    PacketId id = _packetManager.packetIdOf(endpoint);
+    PacketHeader header = {};
+    header.pId = id;
+    header.opId = opId;
+    header.sId = sessionId;
+    header.pSize = data.size();
+    std::vector<std::byte> sPacket = SerializerTrait<PacketHeader>::serialize(header);
+    sPacket.insert(sPacket.end(), data.begin(), data.end());
+    _packetManager.storeOf(endpoint).addToSendList(header, sPacket);
+    if (callback)
+        _addSendCallback(endpoint, header.pId, callback);
+    AConnector::send(endpoint, sPacket);
+}
+
+void polymorph::network::udp::ServerImpl::_send(polymorph::network::OpId opId, const std::vector<std::byte> &data)
+{
+    auto sessions = _sessionStore.allUdpSessions();
+
+    for (auto &session : sessions) {
+        _sendTo(opId, data, session, std::function<void(const PacketHeader &, const std::vector<std::byte> &)>());
+    }
 }

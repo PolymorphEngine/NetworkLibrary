@@ -8,17 +8,20 @@
 
 #pragma once
 
-#include "polymorph/network/udp/APacketHandler.hpp"
-#include "polymorph/network/udp/ServerPacketManager.hpp"
-#include "polymorph/network/udp/PacketStore.hpp"
-#include "polymorph/network/udp/Connector.hpp"
-#include "polymorph/network/SessionStore.hpp"
+#include <map>
+#include <memory>
+
+#include "polymorph/network/udp/IPacketHandler.hpp"
+
+namespace polymorph::network { class SessionStore; }
 
 namespace polymorph::network::udp
 {
-    class Server : public APacketHandler {
 
-        ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
+    class Server : virtual public IPacketHandler
+    {
+
+            ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
             /**
@@ -26,119 +29,89 @@ namespace polymorph::network::udp
              * @param port The port to use by the server
              * @param safeties The safeties map to use to determine if a packet require ack or not
              */
-            Server(std::uint16_t port, std::map<OpId, bool> safeties, SessionStore &sessionStore);
+            static std::unique_ptr<Server> create(std::uint16_t port, std::map<OpId, bool> safeties);
 
             ~Server() override = default;
 
 
-        //////////////////////--------------------------/////////////////////////
+            //////////////////////--------------------------/////////////////////////
 
 
 
-        ///////////////////////////// PROPERTIES ////////////////////////////////
+            ///////////////////////////// PROPERTIES ////////////////////////////////
         public:
 
 
         private:
-            /**
-             * @property The packet manager used to manage the packets
-             */
-            ServerPacketManager _packetManager;
-
-            /**
-             * @property The session store used to manage the sessions
-             */
-            SessionStore &_sessionStore;
-
-            /**
-             * @property The safeties map used to determine if a packet require ack or not
-             */
-            std::map<OpId, bool> _safeties;
 
 
-        //////////////////////--------------------------/////////////////////////
+            //////////////////////--------------------------/////////////////////////
 
 
 
-        /////////////////////////////// METHODS /////////////////////////////////
+            /////////////////////////////// METHODS /////////////////////////////////
         public:
-        /**
-         * @brief get the port used by the server
-         * @return The port number
-         */
-        std::uint16_t getRunningPort() const;
+            virtual void start() = 0;
 
-        /**
-         * @brief Method called when an ack packet is received, it confirm the reception and discard the auto re-send feature for the packet
-         * @param from The recipient of the initial packet
-         * @param acknowledgedId The acknowledged packet id
-         */
-        void ackReceived(const asio::ip::udp::endpoint& from, PacketId acknowledgedId) override;
+            /**
+             * @brief get the port used by the server
+             * @return The port number
+             */
+            virtual std::uint16_t getRunningPort() const = 0;
 
-        /**
-         * @brief Method called when a packet is sent, it confirms the sent and enable the auto re-send feature for safe packets
-         * @param to The recipient of the packet
-         * @param header the header of the packet
-         * @param data The packet in its serialized form
-         */
-        void packetSent(const asio::ip::udp::endpoint& to, const PacketHeader &header, const std::vector<std::byte> &bytes) override;
+            virtual SessionStore *getSessionStore() = 0;
 
-        /**
-         * @brief Send a packet to the client with the specified session id
-         * @tparam T The type of the DTO to transfer
-         * @param opId Operation id of the packet to send
-         * @param data payload of the packet to send
-         * @param sessionId Session id of the recipeint to send the packet to
-         * @param callback callback triggered when the packet is fully sent (and surely received if it was safe)
-         */
-        template<typename T>
-        void sendTo(OpId opId, T &data, SessionId sessionId, std::function<void(const PacketHeader &, const T &)> callback = nullptr)
-        {
-            auto endpoint = _sessionStore.udpEndpointOf(sessionId);
-            PacketId id = _packetManager.packetIdOf(endpoint);
-            Packet<T> packet = {};
-            packet.header.pId = id;
-            packet.header.opId = opId;
-            packet.header.sId = sessionId;
-            packet.payload = data;
-            std::vector<std::byte> sPacket = SerializerTrait<Packet<T>>::serialize(packet);
-            _packetManager.storeOf(endpoint).addToSendList(packet.header, sPacket);
-            if (callback)
-                _addSendCallback(endpoint, packet.header.pId, callback);
-            _connector->send(endpoint, sPacket);
-        }
+            virtual void setSessionStore(SessionStore *sessionStore) = 0;
 
-        /**
-         * @brief Send a packet to all clients
-         * @tparam T
-         * @param opId Operation id of the data T to send
-         * @param data The data to send of type T passed by reference
-         */
-        // TODO: implement callbacks per session AND for all sessions (= when all done)
-        template<typename T>
-        void send(OpId opId, T &data)
-        {
-            auto sessions = _sessionStore.allUdpSessions();
+            virtual void copyTcpSessionsFrom(SessionStore *other) = 0;
 
-            for (auto session: sessions) {
-                sendTo(opId, data, session);
+            virtual void copyUdpSessionsFrom(SessionStore *other) = 0;
+
+            virtual void copyTcpAuthorizationKeysFrom(SessionStore *other) = 0;
+
+            virtual void copyUdpAuthorizationKeysFrom(SessionStore *other) = 0;
+
+            /**
+             * @brief Send a packet to the client with the specified session id
+             * @tparam T The type of the DTO to transfer
+             * @param opId Operation id of the packet to send
+             * @param data payload of the packet to send
+             * @param sessionId Session id of the recipeint to send the packet to
+             * @param callback callback triggered when the packet is fully sent (and surely received if it was safe)
+             */
+            template<typename T>
+            void sendTo(OpId opId, T &data, SessionId sessionId, std::function<void(const PacketHeader &, const T &)> callback = nullptr)
+            {
+                auto serialized = SerializerTrait<T>::serialize(data);
+                _sendTo(opId, serialized, sessionId, [callback](const PacketHeader &header, const std::vector<std::byte> &bytes) {
+                    if (callback) {
+                        auto packet = SerializerTrait<Packet<T>>::deserialize(bytes);
+                        callback(header, packet.payload);
+                    }
+                });
             }
-        }
 
-            void _onPacketReceived(const asio::ip::udp::endpoint &from, const PacketHeader &header,
-                                   const std::vector<std::byte> &bytes) override;
+            /**
+             * @brief Send a packet to all clients
+             * @tparam T
+             * @param opId Operation id of the data T to send
+             * @param data The data to send of type T passed by reference
+             */
+            // TODO: implement callbacks per session AND for all sessions (= when all done)
+            template<typename T>
+            void send(OpId opId, T &data)
+            {
+                auto serialized = SerializerTrait<T>::serialize(data);
+                _send(opId, serialized);
+            }
 
 
         private:
-            void _handleConnectionHandshake(const asio::ip::udp::endpoint &from, const PacketHeader &header,
-                                            const std::vector<std::byte> &bytes);
+            virtual void _sendTo(OpId opId, const std::vector<std::byte> &data, SessionId sessionId, std::function<void(const PacketHeader &, const std::vector<std::byte> &)> callback) = 0;
 
-            void _handleSessionTransfer(const asio::ip::udp::endpoint &from, const PacketHeader &header,
-                                        const std::vector<std::byte> &bytes);
+            virtual void _send(OpId opId, const std::vector<std::byte> &data) = 0;
 
-            void _sendAckPacket(const asio::ip::udp::endpoint &from, const PacketHeader &header);
-
-        //////////////////////--------------------------/////////////////////////
+            //////////////////////--------------------------/////////////////////////
 
     };
 }

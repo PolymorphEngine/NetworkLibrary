@@ -24,17 +24,11 @@ TEST(udpE2E, ServerSend)
     };
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, safeties, serverStore);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    auto server = Server::create(4242, safeties);
+    server->start();
 
     // Client Setup
     Client client("127.0.0.1", 4242, safeties);
-    auto clientConnector = std::make_shared<Connector>(client);
-    client.setConnector(clientConnector);
-    clientConnector->start();
     client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
@@ -50,7 +44,7 @@ TEST(udpE2E, ServerSend)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server.send(2, input_data);
+    server->send(2, input_data);
     // server.sendTo(2, input_data, id); NOT WORKING LA PTN DE SA
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_data, output_data);
@@ -72,17 +66,11 @@ TEST(udpE2E, OpIdDispatchServerSend)
     };
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, safeties, serverStore);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    auto server = Server::create(4242, safeties);
+    server->start();
 
     // Client Setup
     Client client("127.0.0.1", 4242, safeties);
-    auto clientConnector = std::make_shared<Connector>(client);
-    client.setConnector(clientConnector);
-    clientConnector->start();
     client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
@@ -101,8 +89,8 @@ TEST(udpE2E, OpIdDispatchServerSend)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server.send(3, input_char);
-    server.send(2, input_data);
+    server->send(3, input_char);
+    server->send(2, input_data);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_char, output_char);
     ASSERT_EQ(input_data, output_data);
@@ -122,17 +110,11 @@ TEST(udpE2E, ServerDispatchToAllClients)
     };
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, safeties, serverStore);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    auto server = Server::create(4242, safeties);
+    server->start();
 
     // Client1 Setup
     Client client1("127.0.0.1", 4242, safeties);
-    auto client1Connector = std::make_shared<Connector>(client1);
-    client1.setConnector(client1Connector);
-    client1Connector->start();
     client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client1Passed = true;
@@ -140,9 +122,6 @@ TEST(udpE2E, ServerDispatchToAllClients)
 
     // Client2 Setup
     Client client2("127.0.0.1", 4242, safeties);
-    auto client2Connector = std::make_shared<Connector>(client2);
-    client2.setConnector(client2Connector);
-    client2Connector->start();
     client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client2Passed = true;
@@ -167,7 +146,7 @@ TEST(udpE2E, ServerDispatchToAllClients)
     PNL_WAIT_COND_LOOP(!connected1 || !connected2, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected1);
     ASSERT_TRUE(connected2);
-    server.send(2, checkPayload);
+    server->send(2, checkPayload);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(client1Passed);
     ASSERT_TRUE(client2Passed);
@@ -187,17 +166,11 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     };
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, safeties, serverStore);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    auto server = Server::create(4242, safeties);
+    server->start();
 
     // Client1 Setup
     Client client1("127.0.0.1", 4242, safeties);
-    auto client1Connector = std::make_shared<Connector>(client1);
-    client1.setConnector(client1Connector);
-    client1Connector->start();
     client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client1Passed = true;
@@ -205,9 +178,6 @@ TEST(udpE2E, ServerSendOnlyOneClient)
 
     // Client2 Setup
     Client client2("127.0.0.1", 4242, safeties);
-    auto client2Connector = std::make_shared<Connector>(client2);
-    client2.setConnector(client2Connector);
-    client2Connector->start();
     client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client2Passed = false;
@@ -232,7 +202,7 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     PNL_WAIT_COND_LOOP(!connected1 || !connected2, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected1);
     ASSERT_TRUE(connected2);
-    server.sendTo(2, checkPayload, id1);
+    server->sendTo(2, checkPayload, id1);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(client1Passed);
     ASSERT_TRUE(client2Passed);
@@ -252,17 +222,11 @@ TEST(udpE2E, ServerSendCallback)
     };
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, safeties, serverStore);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
+    auto server = Server::create(4242, safeties);
+    server->start();
 
     // Client Setup
     Client client("127.0.0.1", 4242, safeties);
-    auto clientConnector = std::make_shared<Connector>(client);
-    client.setConnector(clientConnector);
-    clientConnector->start();
     client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
@@ -278,7 +242,7 @@ TEST(udpE2E, ServerSendCallback)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server.sendTo<std::uint16_t>(2, input_data, id, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
+    server->sendTo<std::uint16_t>(2, input_data, id, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
         passed = true;
     });
     PNL_WAIT(PNL_TIME_OUT)

@@ -24,20 +24,14 @@ TEST(udpE2E, ClientSend)
     };
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, safeties, serverStore);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
-    server.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    auto server = Server::create(4242, safeties);
+    server->start();
+    server->registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
 
     // Client Setup
     Client client("127.0.0.1", 4242, safeties);
-    auto clientConnector = std::make_shared<Connector>(client);
-    client.setConnector(clientConnector);
-    clientConnector->start();
 
     // Client Infos
     SessionId id;
@@ -69,20 +63,14 @@ TEST(udpE2E, ClientSendCallback)
     };
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, safeties, serverStore);
-    auto serverConnector = std::make_shared<Connector>(server);
-    server.setConnector(serverConnector);
-    serverConnector->start();
-    server.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    auto server = Server::create(4242, safeties);
+    server->start();
+    server->registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
 
     // Client Setup
     Client client("127.0.0.1", 4242, safeties);
-    auto clientConnector = std::make_shared<Connector>(client);
-    client.setConnector(clientConnector);
-    clientConnector->start();
 
 
     // Client Infos

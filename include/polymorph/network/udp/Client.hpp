@@ -10,14 +10,14 @@
 
 #include "APacketHandler.hpp"
 #include "polymorph/network/udp/PacketStore.hpp"
-#include "polymorph/network/udp/Connector.hpp"
+#include "polymorph/network/udp/AConnector.hpp"
 #include "polymorph/network/dto/ACKDto.hpp"
 
 namespace polymorph::network::udp
 {
     class PacketStore;
 
-    class Client : public APacketHandler
+    class Client : virtual IPacketHandler, virtual public APacketHandler, public AConnector
     {
 
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
@@ -68,13 +68,18 @@ namespace polymorph::network::udp
                 std::vector<std::byte> sPacket = SerializerTrait<Packet<T>>::serialize(packet);
                 _packetStore.addToSendList(packet.header, sPacket);
                 if (callback)
-                    _addSendCallback(_serverEndpoint, packet.header.pId, callback);
-                _connector->send(_serverEndpoint, sPacket);
+                    _addSendCallback(_serverEndpoint, packet.header.pId, [callback](const PacketHeader &header, const std::vector<std::byte> &data) {
+                        if (callback) {
+                            auto packet = SerializerTrait<Packet<T>>::deserialize(data);
+                            callback(header, packet.payload);
+                        }
+                    });
+                AConnector::send(_serverEndpoint, sPacket);
             }
 
-            void ackReceived(const asio::ip::udp::endpoint& from, PacketId acknoledgedId) override;
+            void _ackReceived(const asio::ip::udp::endpoint& from, PacketId acknoledgedId) override;
 
-            void packetSent(const asio::ip::udp::endpoint& to, const PacketHeader &header, const std::vector<std::byte> &bytes) override;
+            void _packetSent(const asio::ip::udp::endpoint& to, const PacketHeader &header, const std::vector<std::byte> &bytes) override;
 
             void connect(std::function<void(bool, SessionId session)> callback);
 

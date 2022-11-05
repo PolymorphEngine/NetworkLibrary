@@ -26,14 +26,14 @@ namespace polymorph::network::tcp
      *
      * @inherit IPacketHandler   The interface for packet handlers
      */
-    class PacketHandler : public IPacketReceiver, virtual public IPacketHandler {
+    class APacketHandler : public IPacketReceiver, virtual public IPacketHandler {
 
     ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
     public:
-        PacketHandler() = default;
+        APacketHandler() = default;
 
-        ~PacketHandler() override;
+        ~APacketHandler() override;
 
 
     //////////////////////--------------------------/////////////////////////

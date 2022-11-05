@@ -17,11 +17,11 @@
 
 polymorph::network::udp::Client::Client(std::string host, std::uint16_t port, std::map<OpId, bool> safeties)
     : _serverEndpoint(asio::ip::make_address_v4(host), port),
-    APacketHandler(asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)),
-    _packetStore(_context, safeties,
+      APacketHandler(asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)),
+      _packetStore(_context, safeties,
         [this](std::shared_ptr<SafePacketManager> manager) {
             std::cerr << "Resending lost packet" << std::endl;
-            _socket.async_send_to(asio::buffer(manager->sPacket), manager->endpoint,
+            APacketHandler::_socket.async_send_to(asio::buffer(manager->sPacket), manager->endpoint,
                     [manager](const asio::error_code &error, std::size_t) {
                         if (error) {
                             std::cerr << "Error while sending packet: " << error.message() << std::endl;
@@ -30,20 +30,21 @@ polymorph::network::udp::Client::Client(std::string host, std::uint16_t port, st
                     }
             );
         }),
-    _safeties(std::move(safeties))
+      AConnector(APacketHandler::_socket),
+      _safeties(std::move(safeties))
 {
     _safeties[ConnectionDto::opId] = true;
     _safeties[ACKDto::opId] = false;
     _safeties[SessionTransferRequestDto::opId] = true;
 }
 
-void polymorph::network::udp::Client::ackReceived(const asio::ip::udp::endpoint&, polymorph::network::PacketId acknoledgedId)
+void polymorph::network::udp::Client::_ackReceived(const asio::ip::udp::endpoint&, polymorph::network::PacketId acknoledgedId)
 {
     _packetStore.confirmReceived(acknoledgedId);
 }
 
-void polymorph::network::udp::Client::packetSent(const asio::ip::udp::endpoint& to, const polymorph::network::PacketHeader &header,
-                                                 const std::vector<std::byte> &bytes)
+void polymorph::network::udp::Client::_packetSent(const asio::ip::udp::endpoint& to, const polymorph::network::PacketHeader &header,
+                                                  const std::vector<std::byte> &bytes)
 {
     _packetStore.confirmSent(to, header.pId);
     _callAndPopSendCallback(to, header, bytes);
@@ -59,6 +60,8 @@ void polymorph::network::udp::Client::connect(std::function<void(bool, SessionId
         _isConnected = payload.authorized;
         callback(payload.authorized, header.sId);
     });
+    startConnection();
+    _run();
 }
 
 void polymorph::network::udp::Client::connectWithSession(polymorph::network::SessionId session,
@@ -72,6 +75,8 @@ void polymorph::network::udp::Client::connectWithSession(polymorph::network::Ses
         _isConnected = payload.authorized;
         callback(payload.authorized, header.sId);
     });
+    startConnection();
+    _run();
 }
 
 void polymorph::network::udp::Client::_onPacketReceived(const asio::ip::udp::endpoint &from,

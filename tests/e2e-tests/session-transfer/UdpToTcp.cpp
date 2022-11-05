@@ -25,17 +25,11 @@ TEST(sessionTransferE2E, UdpToTcp)
 
     // Server Setup
     std::map<OpId, bool> safeties;
-    SessionStore serverStore;
-    udp::Server udpServer(4242, safeties, serverStore);
-    auto serverConnector = std::make_shared<udp::Connector>(udpServer);
-    udpServer.setConnector(serverConnector);
-    serverConnector->start();
+    auto udpServer = udp::Server::create(4242, safeties);
+    udpServer->start();
 
     // Client Setup
     udp::Client udpClient("127.0.0.1", 4242, safeties);
-    auto clientConnector = std::make_shared<udp::Connector>(udpClient);
-    udpClient.setConnector(clientConnector);
-    clientConnector->start();
 
     // Client Infos
     bool udpConnected = false;
@@ -60,8 +54,9 @@ TEST(sessionTransferE2E, UdpToTcp)
 
 
     // Server Setup
+    auto sessionStore = udpServer->getSessionStore();
     auto tcpServer = tcp::Server::create(4242);
-    tcpServer->setSessionStore(&serverStore);
+    tcpServer->setSessionStore(sessionStore);
     tcpServer->start();
 
     // Client Setup

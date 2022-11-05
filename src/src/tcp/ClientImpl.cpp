@@ -16,7 +16,7 @@ std::unique_ptr<polymorph::network::tcp::Client> polymorph::network::tcp::Client
 }
 
 polymorph::network::tcp::ClientImpl::ClientImpl(std::string host, std::uint16_t port)
-        : PacketHandler(), _serverEndpoint(asio::ip::make_address_v4(host), port), _socket(_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 0))
+        : APacketHandler(), _serverEndpoint(asio::ip::make_address_v4(host), port), _socket(_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 0))
 {
 
 }
@@ -114,7 +114,7 @@ void polymorph::network::tcp::ClientImpl::_doReceive()
         while (_receiveBuffer.size() > sizeof(PacketHeader) ) {
             auto header = SerializerTrait<PacketHeader>::deserialize(_receiveBuffer);
             if (_receiveBuffer.size() >= sizeof(PacketHeader) + header.pSize) {
-                PacketHandler::packetReceived(header, _receiveBuffer);
+                APacketHandler::packetReceived(header, _receiveBuffer);
                 _receiveBuffer.erase(_receiveBuffer.begin(), _receiveBuffer.begin() + sizeof(PacketHeader) + header.pSize);
             } else
                 break;

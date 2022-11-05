@@ -11,7 +11,7 @@
 #include <asio/io_context.hpp>
 #include <queue>
 #include <vector>
-#include "polymorph/network/udp/IPacketHandler.hpp"
+#include "polymorph/network/udp/IPacketReceiver.hpp"
 
 namespace polymorph::network::udp {
 
@@ -19,7 +19,7 @@ namespace polymorph::network::udp {
      * @brief Connector class, used to send and receive packets
      *        It is shared between the client and the server
      */
-    class Connector {
+    class AConnector : virtual public IPacketReceiver {
 
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
@@ -28,9 +28,9 @@ namespace polymorph::network::udp {
              * @brief Construct a new Connector object
              * @param handler The IPacketHandler to use to handle packets
              */
-            Connector(IPacketHandler &handler);
+            AConnector(asio::ip::udp::socket &socket);
 
-            ~Connector() = default;
+            ~AConnector() override = default;
 
 
     //////////////////////--------------------------/////////////////////////
@@ -51,11 +51,6 @@ namespace polymorph::network::udp {
              * @property An array containing the data received that need to be processed
              */
             std::array<std::byte, 1024> _receiveBuffer;
-
-            /**
-             * @property The IPacketHandler to use to handle packets
-             */
-            IPacketHandler &_packetHandler;
 
             /**
              * @property The socket to use to send and receive packets
@@ -88,7 +83,7 @@ namespace polymorph::network::udp {
             /**
              * @brief Start the receive and run the io_context
              */
-            void start();
+            void startConnection();
 
         private:
             /**
