@@ -1,11 +1,11 @@
 # Polymorph Network Library (UDP part)
 > Here is the documentation for the UDP part. If you want to implement an TCP connection check [this](TCP.md) out.
 
-As mentioned in the [README](/readme.md), the library has 2 major class that you will have to instantiate. For UDP those class are `polymorph::network::udp::Server` and `polymorph::network::udp::Client`. There is also `polymorph::network::udp::Connector` which is really important as it handles send and receive operations
+As mentioned in the [README](/readme.md), the library has 2 major class that you will have to instantiate. For UDP those class are `polymorph::network::udp::Server` and `polymorph::network::udp::Client`.
 
 For readability’s sake, namespaces `polymorph::network::` and `polymorph::network::udp::` will be omitted but keep in mind you need to mention them or use the following directive : 
 ```c++
-using namespace polymorph::networ;
+using namespace polymorph::network;
 using namespace polymorph::network::udp;
 ``` 
 
@@ -17,23 +17,16 @@ This is why you have to create a "safeties mapping", which is a map of `OpId` to
 ## Server
 
 ### 1) Creating a server
-The `Server` have a constructor that takes a port and a `SessionStore` as parameters. You can create a new Session for the server sake or use one that is already used by **ONE UDP server**.  
-You will also have to create a connector with a reference of the created server. Then, you will have to reference the connector in the server with the `Server::setConnector(std::shared_ptr<Connector>)` method.
+The `Server` has a construction method `create` that takes a port as parameter. 
 ```cpp
-SessionStore sessionStoreServer;  // Session store of the server (store any client connection)
-// Then, you can create the server
-// Simply pass the session store, the mapping and the port you want the server to use
-
+//create the safeties map
 std::map<OpId, bool> safetiesMapping = {
     { SampleDto::opId, true }, // SampleDto is an important packet, it will be resent if we do not receive a confirmation of its reception. It will also send an ACK packet if the server receives a packet with this OpId
     { AnotherDto::opId, false } // This packet is not important, it will be sent once
 };
 
-Server server(4242, safetiesMapping,  sessionStoreServer);
-// Then, you have to create a connector
-auto connector = std::make_shared<Connector>(server);
-// And finally, you have to reference the connector in the server
-server.setConnector(connector);
+// Then create the server that will listen on port 4242
+std::unique_ptr<Server> server = Server::create(4242, safetiesMapping);
 ```
 It is recommended to put a public static variable in all your DTOs to always have their associated opId. This is why ```SampleDto::opId``` is used in the snippet.
 
@@ -50,18 +43,15 @@ server->registerReceiveHandler<SampleDto>(SampleDto::opId, [](const PacketHeader
 🎉 Congratulations, you have created your server and registered your first callback !  
 
 ### 3) Start the server
-Now you will have to start it in order to accept incoming connections. To do so, call the `Connector::start()` method.
-> __Warning__
-> Event if there is a `Server::start()` method, you have to call the `Connector::start()` method. This is because the server is not the one that will handle the incoming connections, it is the connector. The server will only handle the packets received by the connector.
-
+Now you will have to start it in order to accept incoming connections.
 ```c++
-connector->start();
+server->start();
 ```
 
 ### 4) Send packets
 You can now send packets to your clients. To do so, you will have to get the `SessionId` of the client you want to send a packet to. You can find it in received packet callbacks in the header. 
 ```cpp
-server.sendTo<SampleDto>(SampleDto::opId, payload, clientSessionId, [](const PacketHEader &header, const SampleDto &payload) {
+server->sendTo<SampleDto>(SampleDto::opId, payload, clientSessionId, [](const PacketHEader &header, const SampleDto &payload) {
     std::cout << "Server sent packet to client" << std::endl;
 });
 // or, to send to all clients
@@ -71,21 +61,21 @@ server.send(SampleDto::opId, payload);
 ## Client
 
 ### 1) Creating a client
-The `Client` have a constructor that takes a host string, a port and a `std::map<OpId, bool>` as parameters . You have to pass the address and the port of a running (or soon) server.
-The safety mapping should be the same as the one used by the server. You will also have to create a connector with a reference of the created client. Then, you will have to reference the connector in the client with the `Client::setConnector(std::shared_ptr<Connector>)` method.
+The `Client` has a construction method that takes a host string, a port and a `std::map<OpId, bool>` as parameters . You have to pass the address and the port of a running (or soon) server.
+The safety mapping should be the same as the one used by the server. You will also have to create a connector with a reference of the created client.
 ```cpp
 std::map<OpId, bool> safetiesMapping = {
     { SampleDto::opId, true }, // SampleDto is an important packet, it will be resent if we do not receive a confirmation of its reception. It will also send an ACK packet if the client receives a packet with this OpId
     { AnotherDto::opId, false } // This packet is not important, it will be sent once
 };
 
-Client client("127.0.0.1", 4242, safetiesMapping);
+std::unique_ptr<Client> client = Client::create("127.0.0.1", 4242, safetiesMapping);
 ```
 
 ### 2) Registering callbacks
 You can now register callbacks to handle received packet. Here is an example of registering a callback for a packet with a payload of type `SampleDto` :
 ```c++
-client.registerReceiveHandler<SampleDto>(SampleDto::opId, [](const PacketHeader &header, const APyaloadType &payload) {
+client->registerReceiveHandler<SampleDto>(SampleDto::opId, [](const PacketHeader &header, const APyaloadType &payload) {
     std::cout << "Client received : " <<  payload.value << std::endl;
     // Note that before calling the callback, the client will check if the packet is important or not. If it is, it will send an ACK packet
 });
@@ -94,7 +84,7 @@ client.registerReceiveHandler<SampleDto>(SampleDto::opId, [](const PacketHeader 
 ### 3) Connecting to the server
 You can now call the `Client::connect()` to initiate the connection with the server. You pass a callback which will be called when the server has accepted/refused the connection. 
 ```c++
-client.connect([](bool authorized, SessionId id) {
+client->connect([](bool authorized, SessionId id) {
     if (authorized) {
         std::cout << "Connected with session id " << id << std::endl;
     } else {
@@ -108,7 +98,7 @@ You can now send packets to the server. Here is an example of sending a packet w
 ```c++
 SampleDto payload;
 payload.value = 42;
-client.send(SampleDto::opId, payload, [](const PacketHeader &header, const SampleDto &payload) {
+client->send(SampleDto::opId, payload, [](const PacketHeader &header, const SampleDto &payload) {
     std::cout << "Client sent packet to server";
 });
 ```
