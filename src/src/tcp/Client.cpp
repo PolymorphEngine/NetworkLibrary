@@ -108,7 +108,7 @@ void polymorph::network::tcp::Client::_doReceive()
         while (_receiveBuffer.size() > sizeof(PacketHeader) ) {
             auto header = SerializerTrait<PacketHeader>::deserialize(_receiveBuffer);
             if (_receiveBuffer.size() >= sizeof(PacketHeader) + header.pSize) {
-                APacketHandler::packetReceived(header, _receiveBuffer);
+                PacketHandler::packetReceived(header, _receiveBuffer);
                 _receiveBuffer.erase(_receiveBuffer.begin(), _receiveBuffer.begin() + sizeof(PacketHeader) + header.pSize);
             } else
                 break;

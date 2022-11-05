@@ -60,8 +60,9 @@ TEST(sessionTransferE2E, UdpToTcp)
 
 
     // Server Setup
-    tcp::Server tcpServer(4242, serverStore);
-    tcpServer.start();
+    auto tcpServer = tcp::Server::create(4242);
+    tcpServer->setSessionStore(&serverStore);
+    tcpServer->start();
 
     // Client Setup
     tcp::Client tcpClient("127.0.0.1", 4242);

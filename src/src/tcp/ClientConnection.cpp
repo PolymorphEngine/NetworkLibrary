@@ -16,9 +16,10 @@
 #include "polymorph/network/exceptions/UnauthorizedException.hpp"
 #include "polymorph/network/dto/SessionTransferRequestDto.hpp"
 #include "polymorph/network/dto/SessionTransferResponseDto.hpp"
+#include "polymorph/network/tcp/ServerImpl.hpp"
 
 
-polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, Server &packetHandler)
+polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, ServerImpl &packetHandler)
         : _sessionAttributor(sessionStore), _connectionPool(std::move(pool)), _packetHandler(packetHandler), _stopped(false), _connected(false), _writeInProgress(false), _socket(std::move(socket))
 {}
 

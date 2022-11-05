@@ -10,7 +10,7 @@
 
 #include <queue>
 #include <iostream>
-#include "APacketHandler.hpp"
+#include "PacketHandler.hpp"
 #include "polymorph/network/dto/ACKDto.hpp"
 
 namespace polymorph::network::tcp
@@ -20,7 +20,7 @@ namespace polymorph::network::tcp
      * @class   TCP Client class
      * @note    TCP exclusive
      */
-    class Client : public APacketHandler
+    class Client : public PacketHandler
     {
 
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////

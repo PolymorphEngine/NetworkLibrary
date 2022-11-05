@@ -23,9 +23,8 @@ TEST(sessionTransferE2E, TcpToUdp)
 
 
 // Server Setup
-SessionStore serverStore;
-tcp::Server tcpServer(4242, serverStore);
-tcpServer.start();
+auto tcpServer = tcp::Server::create(4242);
+tcpServer->start();
 
 // Client Setup
 tcp::Client tcpClient("127.0.0.1", 4242);
@@ -54,8 +53,9 @@ PNL_WAIT(PNL_TIME_OUT)
 ASSERT_TRUE(authKeyReceived);
 
 // Server Setup
+auto sessionStore = tcpServer->getSessionStore();
 std::map<OpId, bool> safeties;
-udp::Server udpServer(4242, safeties, serverStore);
+udp::Server udpServer(4242, safeties, *sessionStore);
 auto serverConnector = std::make_shared<udp::Connector>(udpServer);
 udpServer.setConnector(serverConnector);
 serverConnector->start();

@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "polymorph/network/PacketHeader.hpp"
-#include <vector>
+#include <functional>
+#include "polymorph/network/SerializerTrait.hpp"
 
 namespace polymorph::network::tcp {
 
@@ -22,14 +22,29 @@ namespace polymorph::network::tcp {
             virtual ~IPacketHandler() = default;
 
             /**
-            * @brief   Called when a packet is received
-            *
-            * @param   header  The packet header
-            * @param   bytes   The packet bytes as a vector of bytes (with the header)
-            *
-            * @return  bool    True if the packet was handled correctly, false otherwise
-            */
-            virtual bool packetReceived(const PacketHeader &, const std::vector<std::byte> &bytes) = 0;
+             * @brief   Register the receive handler for the given operation code
+             *
+             * @param   opId    The operation code that will be associated with the receive handler function
+             * @param   handler The receive handler function
+             */
+            template<typename T>
+            void registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const PacketHeader &, const T &)> handler)
+            {
+                _registerReceiveHandler(opId, [handler](const PacketHeader &header, const std::vector<std::byte> &bytes) {
+                    Packet<T> packet = SerializerTrait<Packet<T>>::deserialize(bytes);
+                    return handler(header, packet.payload);
+                });
+            }
 
+            /**
+             * @brief   Unregister all the receive handlers for the given operation code
+             *
+             * @param   opId    The operation code that will be unregistered from the receive handlers
+             */
+            virtual void unregisterReceiveHandlers(polymorph::network::OpId opId) = 0;
+
+
+        private:
+            virtual void _registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const PacketHeader &, const std::vector<std::byte> &)> handler) = 0;
     };
 }

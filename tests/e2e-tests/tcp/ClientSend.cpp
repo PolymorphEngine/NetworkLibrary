@@ -21,10 +21,9 @@ TEST(tcpE2E, ClientSend)
     using namespace polymorph::network::tcp;
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, serverStore);
-    server.start();
-    server.registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
+    auto server = Server::create(4242);
+    server->start();
+    server->registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
@@ -59,10 +58,9 @@ TEST(tcpE2E, ClientSendCallback)
     using namespace polymorph::network::tcp;
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, serverStore);
-    server.start();
-    server.registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
+    auto server = Server::create(4242);
+    server->start();
+    server->registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
