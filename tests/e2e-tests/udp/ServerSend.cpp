@@ -28,8 +28,8 @@ TEST(udpE2E, ServerSend)
     server->start();
 
     // Client Setup
-    Client client("127.0.0.1", 4242, safeties);
-    client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    auto client = Client::create("127.0.0.1", 4242, safeties);
+    client->registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
 
@@ -37,7 +37,7 @@ TEST(udpE2E, ServerSend)
     SessionId id;
     bool connected = false;
 
-    client.connect([&id, &connected](bool authorized, SessionId sId) {
+    client->connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
         id = sId;
     });
@@ -70,11 +70,11 @@ TEST(udpE2E, OpIdDispatchServerSend)
     server->start();
 
     // Client Setup
-    Client client("127.0.0.1", 4242, safeties);
-    client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    auto client = Client::create("127.0.0.1", 4242, safeties);
+    client->registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
-    client.registerReceiveHandler<std::uint8_t>(3, [&output_char](const PacketHeader &, std::uint8_t payload) {
+    client->registerReceiveHandler<std::uint8_t>(3, [&output_char](const PacketHeader &, std::uint8_t payload) {
         output_char = payload;
     });
 
@@ -82,7 +82,7 @@ TEST(udpE2E, OpIdDispatchServerSend)
     SessionId id;
     bool connected = false;
 
-    client.connect([&id, &connected](bool authorized, SessionId sId) {
+    client->connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
         id = sId;
     });
@@ -114,15 +114,15 @@ TEST(udpE2E, ServerDispatchToAllClients)
     server->start();
 
     // Client1 Setup
-    Client client1("127.0.0.1", 4242, safeties);
-    client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+    auto client1 = Client::create("127.0.0.1", 4242, safeties);
+    client1->registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client1Passed = true;
     });
 
     // Client2 Setup
-    Client client2("127.0.0.1", 4242, safeties);
-    client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+    auto client2 = Client::create("127.0.0.1", 4242, safeties);
+    client2->registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client2Passed = true;
     });
@@ -133,12 +133,12 @@ TEST(udpE2E, ServerDispatchToAllClients)
     std::atomic<bool> connected1 = false;
     std::atomic<bool> connected2 = false;
 
-    client1.connect([&id1, &connected1](bool authorized, SessionId sId) {
+    client1->connect([&id1, &connected1](bool authorized, SessionId sId) {
         connected1 = authorized;
         id1 = sId;
     });
 
-    client2.connect([&id2, &connected2](bool authorized, SessionId sId) {
+    client2->connect([&id2, &connected2](bool authorized, SessionId sId) {
         connected2 = authorized;
         id2 = sId;
     });
@@ -170,15 +170,15 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     server->start();
 
     // Client1 Setup
-    Client client1("127.0.0.1", 4242, safeties);
-    client1.registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+    auto client1 = Client::create("127.0.0.1", 4242, safeties);
+    client1->registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client1Passed = true;
     });
 
     // Client2 Setup
-    Client client2("127.0.0.1", 4242, safeties);
-    client2.registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+    auto client2 = Client::create("127.0.0.1", 4242, safeties);
+    client2->registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client2Passed = false;
     });
@@ -189,12 +189,12 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     std::atomic<bool> connected1 = false;
     std::atomic<bool> connected2 = false;
 
-    client1.connect([&id1, &connected1](bool authorized, SessionId sId) {
+    client1->connect([&id1, &connected1](bool authorized, SessionId sId) {
         connected1 = authorized;
         id1 = sId;
     });
 
-    client2.connect([&id2, &connected2](bool authorized, SessionId sId) {
+    client2->connect([&id2, &connected2](bool authorized, SessionId sId) {
         connected2 = authorized;
         id2 = sId;
     });
@@ -226,8 +226,8 @@ TEST(udpE2E, ServerSendCallback)
     server->start();
 
     // Client Setup
-    Client client("127.0.0.1", 4242, safeties);
-    client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    auto client = Client::create("127.0.0.1", 4242, safeties);
+    client->registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
 
@@ -235,7 +235,7 @@ TEST(udpE2E, ServerSendCallback)
     SessionId id;
     bool connected = false;
 
-    client.connect([&id, &connected](bool authorized, SessionId sId) {
+    client->connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
         id = sId;
     });

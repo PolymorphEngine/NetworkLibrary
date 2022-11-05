@@ -63,12 +63,12 @@ TEST(sessionTransferE2E, TcpToUdp)
     udpServer->start();
 
 // Client Setup
-    udp::Client udpClient("127.0.0.1", 4242, safeties);
+    auto udpClient = udp::Client::create("127.0.0.1", 4242, safeties);
 
 // Client Infos
     bool udpConnected = false;
 
-    udpClient.connectWithSession(id, authKey, [&udpConnected](bool authorized, SessionId) {
+    udpClient->connectWithSession(id, authKey, [&udpConnected](bool authorized, SessionId) {
         udpConnected = authorized;
     });
     PNL_WAIT(PNL_TIME_OUT)

@@ -29,13 +29,13 @@ TEST(sessionTransferE2E, UdpToTcp)
     udpServer->start();
 
     // Client Setup
-    udp::Client udpClient("127.0.0.1", 4242, safeties);
+    auto udpClient = udp::Client::create("127.0.0.1", 4242, safeties);
 
     // Client Infos
     bool udpConnected = false;
     SessionId id;
 
-    udpClient.connect([&udpConnected, &id](bool authorized, SessionId sId) {
+    udpClient->connect([&udpConnected, &id](bool authorized, SessionId sId) {
         udpConnected = authorized;
         id = sId;
     });
@@ -43,11 +43,11 @@ TEST(sessionTransferE2E, UdpToTcp)
     PNL_WAIT_COND_LOOP(!udpConnected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(udpConnected);
 
-    udpClient.registerReceiveHandler<SessionTransferResponseDto>(SessionTransferResponseDto::opId, [&authKey, &authKeyReceived](const PacketHeader &, const SessionTransferResponseDto &response) {
+    udpClient->registerReceiveHandler<SessionTransferResponseDto>(SessionTransferResponseDto::opId, [&authKey, &authKeyReceived](const PacketHeader &, const SessionTransferResponseDto &response) {
         authKey = response.authKey;
         authKeyReceived = true;
     });
-    udpClient.send(SessionTransferRequestDto::opId, request);
+    udpClient->send(SessionTransferRequestDto::opId, request);
 
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(authKeyReceived);
