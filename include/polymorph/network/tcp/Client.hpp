@@ -8,7 +8,10 @@
 
 #pragma once
 
+#include <functional>
 #include "polymorph/network/Packet.hpp"
+#include "polymorph/network/SerializerTrait.hpp"
+#include "IPacketHandler.hpp"
 
 namespace polymorph::network::tcp
 {
