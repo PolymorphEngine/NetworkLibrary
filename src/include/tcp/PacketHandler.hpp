@@ -13,8 +13,9 @@
 #include <asio.hpp>
 #include "polymorph/network/PacketHeader.hpp"
 #include "polymorph/network/Packet.hpp"
-#include "polymorph/network/tcp/IPacketHandler.hpp"
+#include "tcp/IPacketReceiver.hpp"
 #include "polymorph/network/SerializerTrait.hpp"
+#include "polymorph/network/tcp/IPacketHandler.hpp"
 
 namespace polymorph::network::tcp
 {
@@ -25,7 +26,7 @@ namespace polymorph::network::tcp
      *
      * @inherit IPacketHandler   The interface for packet handlers
      */
-    class APacketHandler : public IPacketHandler {
+    class APacketHandler : public IPacketReceiver, virtual public IPacketHandler {
 
     ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
@@ -72,27 +73,7 @@ namespace polymorph::network::tcp
     public:
         bool packetReceived(const PacketHeader &, const std::vector<std::byte> &bytes) final;
 
-        /**
-         * @brief   Register the receive handler for the given operation code
-         *
-         * @param   opId    The operation code that will be associated with the receive handler function
-         * @param   handler The receive handler function
-         */
-        template<typename T>
-        void registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const PacketHeader &, const T &)> handler)
-        {
-            _receiveCallbacks[opId].push_back([handler](const PacketHeader &header, const std::vector<std::byte> &bytes) {
-                Packet<T> packet = SerializerTrait<Packet<T>>::deserialize(bytes);
-                return handler(header, packet.payload);
-            });
-        }
-
-        /**
-         * @brief   Unregister all the receive handlers for the given operation code
-         *
-         * @param   opId    The operation code that will be unregistered from the receive handlers
-         */
-        void unregisterReceiveHandlers(polymorph::network::OpId opId);
+        void unregisterReceiveHandlers(polymorph::network::OpId opId) override;
 
     protected:
         /**
@@ -101,7 +82,13 @@ namespace polymorph::network::tcp
         virtual void _run() final;
 
 
-    //////////////////////--------------------------/////////////////////////
+    private:
+        void _registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const PacketHeader &, const std::vector<std::byte> &)> handler) override;
+
+
+
+
+            //////////////////////--------------------------/////////////////////////
 
     };
 

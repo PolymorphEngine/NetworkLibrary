@@ -235,3 +235,13 @@ void polymorph::network::SessionStore::copyUdpAuthorizationKeysFrom(polymorph::n
         return !_udpSessionsAuthorizationKeys.contains(pair.first);
     });
 }
+
+polymorph::network::SessionStore &polymorph::network::SessionStore::operator=(const polymorph::network::SessionStore &other)
+{
+    _udpSessions = other._udpSessions;
+    _tcpSessions = other._tcpSessions;
+    _udpSessionsAuthorizationKeys = other._udpSessionsAuthorizationKeys;
+    _tcpSessionsAuthorizationKeys = other._tcpSessionsAuthorizationKeys;
+
+    return *this;
+}

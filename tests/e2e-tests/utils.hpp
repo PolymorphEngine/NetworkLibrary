@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <thread>
+
 /**
  * @property Set 1 if the network is local (25ms tolerance), 0 if it's outside (250ms tolerance)
  */

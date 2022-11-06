@@ -12,6 +12,7 @@
 #include <asio/steady_timer.hpp>
 #include <utility>
 #include "polymorph/network/types.hpp"
+#include "udp/PacketStore.hpp"
 
 namespace polymorph::network::udp
 {

@@ -8,22 +8,20 @@
 
 #pragma once
 
-#include "APacketHandler.hpp"
-#include "polymorph/network/udp/PacketStore.hpp"
-#include "polymorph/network/udp/Connector.hpp"
+#include "polymorph/network/udp/IPacketHandler.hpp"
 #include "polymorph/network/dto/ACKDto.hpp"
 
 namespace polymorph::network::udp
 {
     class PacketStore;
 
-    class Client : public APacketHandler
+    class Client : virtual public IPacketHandler
     {
 
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            Client(std::string host, std::uint16_t port, std::map<OpId, bool> safeties);
+            static std::unique_ptr<Client> create(std::string host, std::uint16_t port, std::map<OpId, bool> safeties);
 
             ~Client() override = default;
 
@@ -37,13 +35,6 @@ namespace polymorph::network::udp
 
 
         private:
-            asio::ip::udp::endpoint _serverEndpoint;
-            PacketStore _packetStore;
-            PacketId _currentPacketId = 0;
-            SessionId _currentSession = 0;
-            std::map<OpId, bool> _safeties;
-            std::atomic<bool> _isConnected = false;
-            std::atomic<bool> _isConnecting = true;
 
 
 //////////////////////--------------------------/////////////////////////
@@ -55,37 +46,22 @@ namespace polymorph::network::udp
             template<typename T>
             void send(OpId opId, T &payload, std::function<void(const PacketHeader &, const T &)> callback = nullptr)
             {
-                if (!_isConnecting && !_isConnected && opId != ACKDto::opId) {
-                    std::cerr << "Trying to send a packet before client is connected" << std::endl;
-                    return;
-                }
-                ++_currentPacketId;
-                Packet<T> packet = {};
-                packet.header.pId = _currentPacketId;
-                packet.header.opId = opId;
-                packet.header.sId = _currentSession;
-                packet.payload = payload;
-                std::vector<std::byte> sPacket = SerializerTrait<Packet<T>>::serialize(packet);
-                _packetStore.addToSendList(packet.header, sPacket);
-                if (callback)
-                    _addSendCallback(_serverEndpoint, packet.header.pId, callback);
-                _connector->send(_serverEndpoint, sPacket);
+                auto serialized = SerializerTrait<T>::serialize(payload);
+                _send(opId, serialized, [callback](const PacketHeader &header, const std::vector<std::byte> &payload) {
+                    if (callback) {
+                        auto packet = SerializerTrait<Packet<T>>::deserialize(payload);
+                        callback(header, packet.payload);
+                    }
+                });
             }
 
-            void ackReceived(const asio::ip::udp::endpoint& from, PacketId acknoledgedId) override;
+            virtual void connect(std::function<void(bool, SessionId session)> callback) = 0;
 
-            void packetSent(const asio::ip::udp::endpoint& to, const PacketHeader &header, const std::vector<std::byte> &bytes) override;
+            virtual void connectWithSession(SessionId session, AuthorizationKey authKey, std::function<void(bool, SessionId session)> callback) = 0;
 
-            void connect(std::function<void(bool, SessionId session)> callback);
-
-            void connectWithSession(SessionId session, AuthorizationKey authKey, std::function<void(bool, SessionId session)> callback);
-
-        protected:
-            void _onPacketReceived(const asio::ip::udp::endpoint &from, const PacketHeader &header,
-                                   const std::vector<std::byte> &bytes) override;
 
         private:
-            void _sendAckPacket(const asio::ip::udp::endpoint &from, const PacketHeader &header);
+            virtual void _send(OpId opId, const std::vector<std::byte> &payload, std::function<void(const PacketHeader &, const std::vector<std::byte> &)> callback) = 0;
 
 //////////////////////--------------------------/////////////////////////
 

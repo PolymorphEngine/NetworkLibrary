@@ -13,9 +13,10 @@
 #include <queue>
 #include "polymorph/network/SessionStore.hpp"
 #include "polymorph/network/PacketHeader.hpp"
-#include "polymorph/network/tcp/IConnectionPool.hpp"
-#include "polymorph/network/tcp/IPacketHandler.hpp"
+#include "tcp/IConnectionPool.hpp"
+#include "tcp/IPacketReceiver.hpp"
 #include "polymorph/network/tcp/Server.hpp"
+#include "tcp/ServerImpl.hpp"
 
 namespace polymorph::network::tcp
 {
@@ -26,7 +27,7 @@ namespace polymorph::network::tcp
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, Server &packetHandler);
+            ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, ServerImpl &packetHandler);
 
             ~ClientConnection() = default;
 
@@ -42,7 +43,7 @@ namespace polymorph::network::tcp
         private:
             SessionStore &_sessionAttributor;
             std::weak_ptr<IConnectionPool> _connectionPool;
-            Server &_packetHandler;
+            ServerImpl &_packetHandler;
 
             std::atomic<bool> _stopped;
 

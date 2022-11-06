@@ -9,9 +9,9 @@
 #pragma once
 
 #include <iostream>
-#include "polymorph/network/tcp/APacketHandler.hpp"
-#include "polymorph/network/SessionStore.hpp"
-#include "ConnectionPool.hpp"
+#include "polymorph/network/tcp/IPacketHandler.hpp"
+
+namespace polymorph::network { class SessionStore; }
 
 namespace polymorph::network::tcp
 {
@@ -20,15 +20,15 @@ namespace polymorph::network::tcp
      * @class   TCP Server class
      * @note    TCP exclusive
      */
-    class Server : public APacketHandler
+    class Server : virtual public IPacketHandler
     {
 
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            Server(std::uint16_t port, SessionStore &sessionStore);
+            static std::unique_ptr<Server> create(std::uint16_t port);
 
-            ~Server() override;
+            ~Server() override = default;
 
 
 //////////////////////--------------------------/////////////////////////
@@ -40,20 +40,6 @@ namespace polymorph::network::tcp
 
 
         private:
-            /**
-             * @property    The session store to assign session ids to new clients
-             */
-            SessionStore &_sessionStore;
-
-            /**
-             * @property    Connection Pool, responsible of the good behaviour of TCP sockets
-             */
-            std::shared_ptr<ConnectionPool> _connectionPool;
-
-            /**
-             * @property    Asio TCP acceptor.
-             */
-            asio::ip::tcp::acceptor _acceptor;
 
 
 //////////////////////--------------------------/////////////////////////
@@ -65,13 +51,39 @@ namespace polymorph::network::tcp
             /**
              * @brief Accept and start the network context
              */
-            void start();
+            virtual void start() = 0;
 
             /**
              * @brief get the port used by the server
              * @return The port number
              */
-            std::uint16_t getRunningPort() const;
+            virtual std::uint16_t getRunningPort() const = 0;
+
+            virtual SessionStore *getSessionStore() = 0;
+
+            virtual void setSessionStore(SessionStore *sessionStore) = 0;
+
+            virtual void copyTcpSessionsFrom(SessionStore *other) = 0;
+
+            virtual void copyUdpSessionsFrom(SessionStore *other) = 0;
+
+            virtual void copyTcpAuthorizationKeysFrom(SessionStore *other) = 0;
+
+            virtual void copyUdpAuthorizationKeysFrom(SessionStore *other) = 0;
+
+            /**
+             * @brief Generate an authorization key for a specific sessionId to connect with UDP
+             * @param sessionId The sessionId to generate the key for
+             * @return The generated key
+             */
+            virtual AuthorizationKey generateUdpAuthorizationKey(SessionId sessionId) = 0;
+
+            /**
+             * @brief Generate an authorization key for a specific sessionId to connect with TCP
+             * @param sessionId The sessionId to generate the key for
+             * @return The generated key
+             */
+            virtual AuthorizationKey generateTcpAuthorizationKey(SessionId sessionId) = 0;
 
             /**
              * @brief   Send a payload to the server
@@ -85,23 +97,11 @@ namespace polymorph::network::tcp
             template<typename T>
             void sendTo(OpId opId, T &data, SessionId sessionId, std::function<void(const PacketHeader &, const T &)> callback = nullptr)
             {
-                auto connection = _connectionPool->getConnectionBySessionId(sessionId);
-
-                if (connection == nullptr) {
-                    std::cerr << "Trying to send a packet to a non existing session" << std::endl;
-                    return;
-                }
-                auto pId = connection->getPacketId();
-                Packet<T> packet = {};
-                packet.header.opId = opId;
-                packet.header.pId = pId;
-                packet.header.sId = sessionId;
-                packet.payload = data;
-                auto serialized = SerializerTrait<Packet<T>>::serialize(packet);
-                connection->send(serialized, [callback](const PacketHeader &header, const std::vector<std::byte> &data) {
-                    if (callback != nullptr) {
-                        auto deserialized = SerializerTrait<Packet<T>>::deserialize(data);
-                        callback(header, deserialized.payload);
+                auto serialized = SerializerTrait<T>::serialize(data);
+                _sendTo(opId, serialized, sessionId, [callback](const PacketHeader &header, const std::vector<std::byte> &bytes) {
+                    if (callback) {
+                        T data = SerializerTrait<T>::deserialize(bytes);
+                        callback(header, data);
                     }
                 });
             }
@@ -116,27 +116,17 @@ namespace polymorph::network::tcp
             template<typename T>
             void send(OpId opId, T &data)
             {
-                auto connections = _connectionPool->getConnections();
-
-                for (auto &connection : connections) {
-                    auto pId = connection->getPacketId();
-                    Packet<T> packet = {};
-                    packet.header.opId = opId;
-                    packet.header.pId = pId;
-                    packet.header.sId = connection->getSessionId();
-                    packet.payload = data;
-                    auto serialized = SerializerTrait<Packet<T>>::serialize(packet);
-                    connection->send(serialized, std::function<void (const PacketHeader &, const std::vector<std::byte> &)>());
-                }
+                auto serialized = SerializerTrait<T>::serialize(data);
+                _send(opId, serialized);
             }
 
 
 
         private:
-            /**
-             * @brief Accept clients to connect to the server
-             */
-            void _doAccept();
+
+            virtual void _sendTo(OpId opId, const std::vector<std::byte> &data, SessionId sessionId, std::function<void(const PacketHeader &header, const std::vector<std::byte> &data)> callback) = 0;
+
+            virtual void _send(OpId opId, const std::vector<std::byte> &data) = 0;
 
 
 //////////////////////--------------------------/////////////////////////

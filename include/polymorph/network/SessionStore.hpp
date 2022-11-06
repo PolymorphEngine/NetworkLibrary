@@ -83,6 +83,8 @@ namespace polymorph::network
 
 /////////////////////////////// METHODS /////////////////////////////////
         public:
+            SessionStore &operator=(const SessionStore &other);
+
             void copyTcpSessionsFrom(SessionStore &other);
 
             void copyUdpSessionsFrom(SessionStore &other);
