@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <asio/ip/udp.hpp>
-#include "polymorph/network/SessionStore.hpp"
+#include "SessionStore.hpp"
 #include "polymorph/network/exceptions/UnknownSessionException.hpp"
 
 TEST(SessionStoreTests, UdpSessionStoreId)

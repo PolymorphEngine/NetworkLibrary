@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include "tcp/PacketHandler.hpp"
-#include "polymorph/network/SessionStore.hpp"
+#include "SessionStore.hpp"
 #include "ConnectionPool.hpp"
 #include "polymorph/network/tcp/Server.hpp"
 

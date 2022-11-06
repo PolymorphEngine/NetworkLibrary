@@ -6,7 +6,7 @@
 */
 
 
-#include "polymorph/network/SessionStore.hpp"
+#include "SessionStore.hpp"
 #include "authorizationKey.hpp"
 #include "polymorph/network/exceptions/UnknownAuthorizationKeyException.hpp"
 #include "polymorph/network/exceptions/UnauthorizedException.hpp"

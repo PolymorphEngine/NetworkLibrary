@@ -11,7 +11,7 @@
 #include <memory>
 #include <asio/ip/udp.hpp>
 #include <queue>
-#include "polymorph/network/SessionStore.hpp"
+#include "SessionStore.hpp"
 #include "polymorph/network/PacketHeader.hpp"
 #include "tcp/IConnectionPool.hpp"
 #include "tcp/IPacketReceiver.hpp"
