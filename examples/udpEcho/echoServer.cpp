@@ -17,24 +17,19 @@ int main(int ac, char **av)
     std::map<OpId, bool> safeties = {
         { MessageDto::opId, true } // we want the server to resend the message if it doesn't receive an ACK
     };
-    // we create a SessionStore that will attribute the sessions
-    SessionStore sessionStore;
-    // we create a server and bind its connector
-    Server server(std::stoi(av[1]), safeties, sessionStore);
-    auto connector = std::make_shared<Connector>(server);
-    server.setConnector(connector);
+    auto server = Server::create(std::stoi(av[1]), safeties);
 
     // we register a callback that will handle the received MessageDto and send it back to the client
-    server.registerReceiveHandler<MessageDto>(MessageDto::opId, [&server](const PacketHeader &header, const MessageDto &payload) {
+    server->registerReceiveHandler<MessageDto>(MessageDto::opId, [&server](const PacketHeader &header, const MessageDto &payload) {
         std::cout << "Received: " << payload.message << std::endl;
         MessageDto toResend = payload;
-        server.sendTo<MessageDto>(MessageDto::opId, toResend, header.sId, [](const PacketHeader &header, const MessageDto &payload) {
+        server->sendTo<MessageDto>(MessageDto::opId, toResend, header.sId, [](const PacketHeader &header, const MessageDto &payload) {
             std::cout << "Message has been echoed" << std::endl;
         });
     });
 
     // we start the server
-    connector->start();
+    server->start();
 
     // make the main thread sleep forever
     std::promise<void> p;

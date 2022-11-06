@@ -1,4 +1,7 @@
 #include <iostream>
+#include <atomic>
+#include <thread>
+#include <cassert>
 #include "polymorph/network/tcp/Client.hpp"
 #include "MessageDto.hpp"
 
@@ -14,7 +17,7 @@ int main(int ac, char **av)
     }
 
     // we create a client and bind its connector
-    Client client(av[1], std::stoi(av[2]));
+    auto client = Client::create(av[1], std::stoi(av[2]));
 
     // check variables for the example
     std::atomic<bool> received(false);
@@ -22,14 +25,14 @@ int main(int ac, char **av)
     MessageDto dto { .message = "Hello World!" };
 
     // we register a callback that will handle the received MessageDto
-    client.registerReceiveHandler<MessageDto>(MessageDto::opId, [&received](const PacketHeader &, const MessageDto &payload) {
+    client->registerReceiveHandler<MessageDto>(MessageDto::opId, [&received](const PacketHeader &, const MessageDto &payload) {
         received = true;
         std::cout << "Received: " << payload.message << std::endl;
         return true; // The received data is correct, we do not want to disconnect the client
     });
 
     // Then we connect to the server and pass a callback that will be called when the connection is established
-    client.connect([&connected](bool authorized, SessionId) {
+    client->connect([&connected](bool authorized, SessionId) {
         if (authorized) {
             std::cout << "Connected" << std::endl;
             connected = true;
@@ -46,7 +49,7 @@ int main(int ac, char **av)
     assert(connected); // abort if we couldn't connect
 
     // we send the MessageDto to the server
-    client.send<MessageDto>(MessageDto::opId, dto, [](const PacketHeader &header, const MessageDto &payload) {
+    client->send<MessageDto>(MessageDto::opId, dto, [](const PacketHeader &header, const MessageDto &payload) {
         std::cout << "Message has been sent" << std::endl;
     });
 

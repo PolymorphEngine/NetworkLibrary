@@ -21,14 +21,13 @@ TEST(tcpE2E, ServerSend)
     using namespace polymorph::network::tcp;
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, serverStore);
-    server.start();
+    auto server = Server::create(4242);
+    server->start();
 
     // Client Setup
-    Client client("127.0.0.1", 4242);
+    auto client = Client::create("127.0.0.1", 4242);
 
-    client.registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
+    client->registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
@@ -37,14 +36,14 @@ TEST(tcpE2E, ServerSend)
     SessionId id;
     bool connected = false;
 
-    client.connect([&id, &connected](bool authorized, SessionId sId) {
+    client->connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
         id = sId;
     });
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server.send(3, input_data);
+    server->send<std::uint16_t>(3, input_data);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_data, output_data);
 }
@@ -61,17 +60,16 @@ TEST(tcpE2E, OpIdDispatchServerSend)
     using namespace polymorph::network::tcp;
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, serverStore);
-    server.start();
+    auto server = Server::create(4242);
+    server->start();
 
     // Client Setup
-    Client client("127.0.0.1", 4242);
-        client.registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
+    auto client = Client::create("127.0.0.1", 4242);
+        client->registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
-    client.registerReceiveHandler<std::uint8_t>(4, [&output_char](const PacketHeader &, std::uint8_t payload) {
+    client->registerReceiveHandler<std::uint8_t>(4, [&output_char](const PacketHeader &, std::uint8_t payload) {
         output_char = payload;
         return true;
     });
@@ -80,15 +78,15 @@ TEST(tcpE2E, OpIdDispatchServerSend)
     SessionId id;
     bool connected = false;
 
-    client.connect([&id, &connected](bool authorized, SessionId sId) {
+    client->connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
         id = sId;
     });
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server.send(4, input_char);
-    server.send(3, input_data);
+    server->send(4, input_char);
+    server->send(3, input_data);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_char, output_char);
     ASSERT_EQ(input_data, output_data);
@@ -105,20 +103,19 @@ TEST(tcpE2E, ServerDispatchToAllClients)
     using namespace polymorph::network::tcp;
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, serverStore);
-    server.start();
+    auto server = Server::create(4242);
+    server->start();
 
     // Client1 Setup
-    Client client1("127.0.0.1", 4242);
-        client1.registerReceiveHandler<std::uint16_t>(3, [&client1Passed, &checkPayload](const PacketHeader &, const uint16_t& payload) {
+    auto client1 = Client::create("127.0.0.1", 4242);
+    client1->registerReceiveHandler<std::uint16_t>(3, [&client1Passed, &checkPayload](const PacketHeader &, const uint16_t& payload) {
         client1Passed = (payload == checkPayload);
         return true;
     });
 
     // Client2 Setup
-    Client client2("127.0.0.1", 4242);
-        client2.registerReceiveHandler<std::uint16_t>(3, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+    auto client2 = Client::create("127.0.0.1", 4242);
+        client2->registerReceiveHandler<std::uint16_t>(3, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         client2Passed = (payload == checkPayload);
         return true;
     });
@@ -129,12 +126,12 @@ TEST(tcpE2E, ServerDispatchToAllClients)
     std::atomic<bool> connected1 = false;
     std::atomic<bool> connected2 = false;
 
-    client1.connect([&id1, &connected1](bool authorized, SessionId sId) {
+    client1->connect([&id1, &connected1](bool authorized, SessionId sId) {
         connected1 = authorized;
         id1 = sId;
     });
 
-    client2.connect([&id2, &connected2](bool authorized, SessionId sId) {
+    client2->connect([&id2, &connected2](bool authorized, SessionId sId) {
         connected2 = authorized;
         id2 = sId;
     });
@@ -142,7 +139,7 @@ TEST(tcpE2E, ServerDispatchToAllClients)
     PNL_WAIT_COND_LOOP(!connected1 || !connected2, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected1);
     ASSERT_TRUE(connected2);
-    server.send(3, checkPayload);
+    server->send(3, checkPayload);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(client1Passed);
     ASSERT_TRUE(client2Passed);
@@ -159,20 +156,19 @@ TEST(tcpE2E, ServerSendOnlyOneClient)
     using namespace polymorph::network::tcp;
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, serverStore);
-    server.start();
+    auto server = Server::create(4242);
+    server->start();
 
     // Client1 Setup
-    Client client1("127.0.0.1", 4242);
-        client1.registerReceiveHandler<std::uint16_t>(3, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+    auto client1 = Client::create("127.0.0.1", 4242);
+    client1->registerReceiveHandler<std::uint16_t>(3, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         client1Passed = (payload == checkPayload);
         return true;
     });
 
     // Client2 Setup
-    Client client2("127.0.0.1", 4242);
-    client2.registerReceiveHandler<std::uint16_t>(3, [&client2Passed](const PacketHeader &, uint16_t payload) {
+    auto client2 = Client::create("127.0.0.1", 4242);
+    client2->registerReceiveHandler<std::uint16_t>(3, [&client2Passed](const PacketHeader &, uint16_t payload) {
         client2Passed = false;
         return true;
     });
@@ -183,12 +179,12 @@ TEST(tcpE2E, ServerSendOnlyOneClient)
     std::atomic<bool> connected1 = false;
     std::atomic<bool> connected2 = false;
 
-    client1.connect([&id1, &connected1](bool authorized, SessionId sId) {
+    client1->connect([&id1, &connected1](bool authorized, SessionId sId) {
         connected1 = authorized;
         id1 = sId;
     });
 
-    client2.connect([&id2, &connected2](bool authorized, SessionId sId) {
+    client2->connect([&id2, &connected2](bool authorized, SessionId sId) {
         connected2 = authorized;
         id2 = sId;
     });
@@ -196,7 +192,7 @@ TEST(tcpE2E, ServerSendOnlyOneClient)
     PNL_WAIT_COND_LOOP(!connected1 || !connected2, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected1);
     ASSERT_TRUE(connected2);
-    server.sendTo(3, checkPayload, id1);
+    server->sendTo(3, checkPayload, id1);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(client1Passed);
     ASSERT_TRUE(client2Passed);
@@ -213,13 +209,12 @@ TEST(tcpE2E, ServerSendCallback)
     using namespace polymorph::network::tcp;
 
     // Server Setup
-    SessionStore serverStore;
-    Server server(4242, serverStore);
-    server.start();
+    auto server = Server::create(4242);
+    server->start();
 
     // Client Setup
-    Client client("127.0.0.1", 4242);
-        client.registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
+    auto client = Client::create("127.0.0.1", 4242);
+    client->registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
@@ -228,14 +223,14 @@ TEST(tcpE2E, ServerSendCallback)
     SessionId id;
     bool connected = false;
 
-    client.connect([&id, &connected](bool authorized, SessionId sId) {
+    client->connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
         id = sId;
     });
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server.sendTo<std::uint16_t>(3, input_data, id, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
+    server->sendTo<std::uint16_t>(3, input_data, id, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
         passed = true;
     });
     PNL_WAIT(PNL_TIME_OUT)

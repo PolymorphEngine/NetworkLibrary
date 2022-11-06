@@ -1,4 +1,9 @@
 #include <iostream>
+#include <map>
+#include <memory>
+#include <atomic>
+#include <thread>
+#include <cassert>
 #include "polymorph/network/udp/Client.hpp"
 #include "MessageDto.hpp"
 
@@ -17,10 +22,7 @@ int main(int ac, char **av)
         { MessageDto::opId, true } // we want the client to resend the message if it doesn't receive an ACK
     };
     // we create a client and bind its connector
-    Client client(av[1], std::stoi(av[2]), safeties);
-    auto connector = std::make_shared<Connector>(client);
-    client.setConnector(connector);
-    connector->start();
+    auto client = Client::create(av[1], std::stoi(av[2]), safeties);
 
     // check variables for the example
     std::atomic<bool> received(false);
@@ -28,13 +30,13 @@ int main(int ac, char **av)
     MessageDto dto { .message = "Hello World!" };
 
     // we register a callback that will handle the received MessageDto
-    client.registerReceiveHandler<MessageDto>(MessageDto::opId, [&received](const PacketHeader &, const MessageDto &payload) {
+    client->registerReceiveHandler<MessageDto>(MessageDto::opId, [&received](const PacketHeader &, const MessageDto &payload) {
         received = true;
         std::cout << "Received: " << payload.message << std::endl;
     });
 
     // Then we connect to the server and pass a callback that will be called when the connection is established
-    client.connect([&connected](bool authorized, SessionId) {
+    client->connect([&connected](bool authorized, SessionId) {
         if (authorized) {
             std::cout << "Connected" << std::endl;
             connected = true;
@@ -51,7 +53,7 @@ int main(int ac, char **av)
     assert(connected); // abort if we couldn't connect
 
     // we send the MessageDto to the server
-    client.send<MessageDto>(MessageDto::opId, dto, [](const PacketHeader &header, const MessageDto &payload) {
+    client->send<MessageDto>(MessageDto::opId, dto, [](const PacketHeader &header, const MessageDto &payload) {
         std::cout << "Message has been sent" << std::endl;
     });
 

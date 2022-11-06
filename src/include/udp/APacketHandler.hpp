@@ -12,21 +12,23 @@
 #include <functional>
 #include <asio/ip/udp.hpp>
 #include <thread>
-#include "polymorph/network/udp/IPacketHandler.hpp"
+#include <utility>
+#include "udp/IPacketReceiver.hpp"
 #include "polymorph/network/Packet.hpp"
 #include "polymorph/network/SerializerTrait.hpp"
+#include "polymorph/network/udp/IPacketHandler.hpp"
 
 namespace polymorph::network::udp
 {
-    class Connector;
+    class AConnector;
 
-    class APacketHandler : public IPacketHandler
+    class APacketHandler : virtual public IPacketReceiver, virtual public IPacketHandler
     {
 
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            APacketHandler(asio::ip::udp::endpoint endpoint);
+            explicit APacketHandler(asio::ip::udp::endpoint endpoint);
 
             ~APacketHandler() override;
 
@@ -46,11 +48,6 @@ namespace polymorph::network::udp
              * @property The socket to use to send and receive packets
              */
             asio::ip::udp::socket _socket;
-
-            /**
-             * @property The link to a Connector instance to send packets
-             */
-            std::shared_ptr<Connector> _connector;
 
         private:
             /**
@@ -77,46 +74,17 @@ namespace polymorph::network::udp
 /////////////////////////////// METHODS /////////////////////////////////
         public:
             /**
-             * @copydetails IPacketHandler::packetReceived
+             * @copydetails IPacketHandler::_packetReceived
              */
-            void packetReceived(const asio::ip::udp::endpoint& from, const std::vector<std::byte> &bytes) override final;
-
-            /**
-             * @copydetails IPacketHandler::getPreparedSocket
-             */
-            asio::ip::udp::socket &getPreparedSocket() override final;
-
-            /**
-             * @copydetails IPacketHandler::start
-             */
-            void start() override final;
-
-            /**
-             * @brief Add a callback to call when a packet is received with the passed opId
-             * @tparam T The type of the packet to handle
-             * @param opId The opId of the packet to handle
-             * @param callback The callback to call when a packet is received
-             */
-            template<typename T>
-            void registerReceiveHandler(OpId opId, std::function<void(const PacketHeader &, const T &)> callback)
-            {
-                _receiveCallbacks[opId].push_back([callback](const PacketHeader &header, const std::vector<std::byte> &bytes) {
-                    Packet<T> packet = SerializerTrait<Packet<T>>::deserialize(bytes);
-                    callback(header, packet.payload);
-                });
-            }
+            void _packetReceived(const asio::ip::udp::endpoint& from, const std::vector<std::byte> &bytes) final;
 
             /**
              * @brief Remove all callbacks registered for the passed opId
              * @param opId The opId of the packet to remove the callbacks from
              */
-            void unregisterReceiveHandlers(OpId opId);
+            void unregisterReceiveHandlers(OpId opId) final ;
 
-            /**
-             * @brief Set the _connector property
-             * @param connector The connector to link to
-             */
-            void setConnector(std::shared_ptr<Connector> connector);
+            void _run();
 
         protected:
             virtual void _onPacketReceived(const asio::ip::udp::endpoint &from, const PacketHeader &header, const std::vector<std::byte> &bytes) = 0;
@@ -124,13 +92,9 @@ namespace polymorph::network::udp
             /**
              * @brief add a callback to call when a packet with a specific packet id is sent
              */
-            template<typename T>
-            void _addSendCallback(const asio::ip::udp::endpoint& to, PacketId id, std::function<void(const PacketHeader &, const T &)> callback)
+            void _addSendCallback(const asio::ip::udp::endpoint& to, PacketId id, std::function<void(const PacketHeader &, const std::vector<std::byte> &)> callback)
             {
-                _sentCallbacks[std::make_pair(to, id)] = [callback](const PacketHeader &header, const std::vector<std::byte> &bytes) {
-                    Packet<T> packet = SerializerTrait<Packet<T>>::deserialize(bytes);
-                    callback(header, packet.payload);
-                };
+                _sentCallbacks[std::make_pair(to, id)] = std::move(callback);
             };
 
             /**
@@ -145,6 +109,8 @@ namespace polymorph::network::udp
              * @param bytes The packet in its serialized form
              */
             void _broadcastReceivedPacket(const PacketHeader &header, const std::vector<std::byte> &bytes);
+
+            void _registerReceiveHandler(polymorph::network::OpId opId, std::function<void(const PacketHeader &, const std::vector<std::byte> &)> handler) override;
 
 
 

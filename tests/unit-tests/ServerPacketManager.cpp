@@ -7,7 +7,7 @@
 
 
 #include <gtest/gtest.h>
-#include "polymorph/network/udp/ServerPacketManager.hpp"
+#include "udp/ServerPacketManager.hpp"
 #include "polymorph/network/udp/Server.hpp"
 
 TEST(ServerPacketManagerTests, SimpleRegistering) {

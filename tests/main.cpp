@@ -4,7 +4,7 @@
 #include <map>
 #include "polymorph/network/udp/Client.hpp"
 #include "polymorph/network/udp/Server.hpp"
-#include "polymorph/network/udp/Connector.hpp"
+#include "polymorph/network/udp/AConnector.hpp"
 #include "e2e-tests/utils.hpp"
 
 
@@ -24,13 +24,13 @@ int main(){
 
     // Server Setup
     Server server(4242, safeties);
-    auto serverConnector = std::make_shared<Connector>(server);
+    auto serverConnector = std::make_shared<AConnector>(server);
     server.setConnector(serverConnector);
     serverConnector->start();
 
     // Client Setup
     Client client("127.0.0.1", 4242, safeties);
-    auto clientConnector = std::make_shared<Connector>(client);
+    auto clientConnector = std::make_shared<AConnector>(client);
     client.setConnector(clientConnector);
     clientConnector->start();
     client.registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {

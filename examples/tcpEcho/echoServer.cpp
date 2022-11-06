@@ -14,23 +14,21 @@ int main(int ac, char **av)
         return 1;
     }
 
-    // we create a SessionStore that will attribute the sessions
-    SessionStore sessionStore;
     // we create a server and bind its connector
-    Server server(std::stoi(av[1]), sessionStore);
+    auto server = Server::create(std::stoi(av[1]));
 
     // we register a callback that will handle the received MessageDto and send it back to the client
-    server.registerReceiveHandler<MessageDto>(MessageDto::opId, [&server](const PacketHeader &header, const MessageDto &payload) {
+    server->registerReceiveHandler<MessageDto>(MessageDto::opId, [&server](const PacketHeader &header, const MessageDto &payload) {
         std::cout << "Received: " << payload.message << std::endl;
         MessageDto toResend = payload;
-        server.sendTo<MessageDto>(MessageDto::opId, toResend, header.sId, [](const PacketHeader &header, const MessageDto &payload) {
+        server->sendTo<MessageDto>(MessageDto::opId, toResend, header.sId, [](const PacketHeader &header, const MessageDto &payload) {
             std::cout << "Message has been echoed" << std::endl;
         });
         return true; // The received data is correct, we do not want to disconnect the client
     });
 
     // we start the server
-    server.start();
+    server->start();
 
     // make the main thread sleep forever
     std::promise<void> p;

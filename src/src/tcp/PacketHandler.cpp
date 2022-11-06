@@ -6,7 +6,7 @@
 */
 
 #include <iostream>
-#include "polymorph/network/tcp/APacketHandler.hpp"
+#include "tcp/PacketHandler.hpp"
 #include "polymorph/network/SerializerTrait.hpp"
 #include "polymorph/network/exceptions/DeserializingException.hpp"
 
@@ -48,4 +48,9 @@ void polymorph::network::tcp::APacketHandler::_run()
     _thread = std::thread([this]() {
         _context.run();
     });
+}
+
+void polymorph::network::tcp::APacketHandler::_registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const PacketHeader &, const std::vector<std::byte> &)> handler)
+{
+    _receiveCallbacks[opId].emplace_back(std::move(handler));
 }

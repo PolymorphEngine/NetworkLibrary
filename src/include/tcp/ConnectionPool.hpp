@@ -10,7 +10,7 @@
 
 #include <set>
 #include <vector>
-#include "polymorph/network/tcp/IConnectionPool.hpp"
+#include "tcp/IConnectionPool.hpp"
 #include "polymorph/network/types.hpp"
 
 namespace polymorph::network::tcp

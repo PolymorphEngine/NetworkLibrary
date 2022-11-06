@@ -16,9 +16,10 @@
 #include "polymorph/network/exceptions/UnauthorizedException.hpp"
 #include "polymorph/network/dto/SessionTransferRequestDto.hpp"
 #include "polymorph/network/dto/SessionTransferResponseDto.hpp"
+#include "tcp/ServerImpl.hpp"
 
 
-polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, Server &packetHandler)
+polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, ServerImpl &packetHandler)
         : _sessionAttributor(sessionStore), _connectionPool(std::move(pool)), _packetHandler(packetHandler), _stopped(false), _connected(false), _writeInProgress(false), _socket(std::move(socket))
 {}
 
@@ -160,7 +161,7 @@ polymorph::network::PacketId polymorph::network::tcp::ClientConnection::getPacke
     return ++_packetId;
 }
 
-void polymorph::network::tcp::ClientConnection::_handleSessionTransferPacket(const polymorph::network::PacketHeader &header,
+void polymorph::network::tcp::ClientConnection::_handleSessionTransferPacket(const polymorph::network::PacketHeader&,
                                                                              const std::vector<std::byte> &bytes)
 {
     auto packet = SerializerTrait<Packet<SessionTransferRequestDto>>::deserialize(bytes);
