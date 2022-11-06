@@ -168,6 +168,18 @@ void polymorph::network::udp::ServerImpl::copyUdpAuthorizationKeysFrom(polymorph
     _sessionStore.copyUdpAuthorizationKeysFrom(*other);
 }
 
+polymorph::network::AuthorizationKey
+polymorph::network::udp::ServerImpl::generateUdpAuthorizationKey(polymorph::network::SessionId sessionId)
+{
+    return _sessionStore.generateUdpAuthorizationKey(sessionId);
+}
+
+polymorph::network::AuthorizationKey
+polymorph::network::udp::ServerImpl::generateTcpAuthorizationKey(polymorph::network::SessionId sessionId)
+{
+    return _sessionStore.generateTcpAuthorizationKey(sessionId);
+}
+
 void polymorph::network::udp::ServerImpl::_sendTo(polymorph::network::OpId opId, const std::vector<std::byte> &data, polymorph::network::SessionId sessionId,
         std::function<void(const PacketHeader &, const std::vector<std::byte> &)> callback)
 {
