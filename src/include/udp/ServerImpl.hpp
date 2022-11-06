@@ -111,6 +111,10 @@ namespace polymorph::network::udp
             void _onPacketReceived(const asio::ip::udp::endpoint &from, const PacketHeader &header,
                                    const std::vector<std::byte> &bytes) override;
 
+            AuthorizationKey generateUdpAuthorizationKey(SessionId sessionId) override;
+
+            AuthorizationKey generateTcpAuthorizationKey(SessionId sessionId) override;
+
 
         private:
             void _handleConnectionHandshake(const asio::ip::udp::endpoint &from, const PacketHeader &header,

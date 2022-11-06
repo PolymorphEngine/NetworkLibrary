@@ -71,6 +71,20 @@ namespace polymorph::network::udp
             virtual void copyUdpAuthorizationKeysFrom(SessionStore *other) = 0;
 
             /**
+             * @brief Generate an authorization key for a specific sessionId to connect with UDP
+             * @param sessionId The sessionId to generate the key for
+             * @return The generated key
+             */
+            virtual AuthorizationKey generateUdpAuthorizationKey(SessionId sessionId) = 0;
+
+            /**
+             * @brief Generate an authorization key for a specific sessionId to connect with TCP
+             * @param sessionId The sessionId to generate the key for
+             * @return The generated key
+             */
+            virtual AuthorizationKey generateTcpAuthorizationKey(SessionId sessionId) = 0;
+
+            /**
              * @brief Send a packet to the client with the specified session id
              * @tparam T The type of the DTO to transfer
              * @param opId Operation id of the packet to send
