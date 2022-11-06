@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <memory>
 #include <functional>
 #include "polymorph/network/Packet.hpp"
 #include "polymorph/network/SerializerTrait.hpp"
