@@ -161,7 +161,7 @@ polymorph::network::PacketId polymorph::network::tcp::ClientConnection::getPacke
     return ++_packetId;
 }
 
-void polymorph::network::tcp::ClientConnection::_handleSessionTransferPacket(const polymorph::network::PacketHeader &header,
+void polymorph::network::tcp::ClientConnection::_handleSessionTransferPacket(const polymorph::network::PacketHeader&,
                                                                              const std::vector<std::byte> &bytes)
 {
     auto packet = SerializerTrait<Packet<SessionTransferRequestDto>>::deserialize(bytes);

@@ -26,7 +26,8 @@ if (NOT TARGET PolymorphNetwork)
     if(WIN32)
         # MSVC
         # /wd4100: unreferenced formal parameter (= unused parameter)
-        target_compile_options(PolymorphNetwork PRIVATE /W4)
+        # /wd4250 : inherits via dominance
+        target_compile_options(PolymorphNetwork PRIVATE /W4 /wd4250)
     endif()
 endif()
 

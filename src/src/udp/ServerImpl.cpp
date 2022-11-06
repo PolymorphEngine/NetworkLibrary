@@ -116,8 +116,8 @@ void polymorph::network::udp::ServerImpl::_sendAckPacket(const asio::ip::udp::en
     sendTo<ACKDto>(ACKDto::opId, ack, _sessionStore.sessionOf(from));
 }
 
-void polymorph::network::udp::ServerImpl::_handleSessionTransfer(const asio::ip::udp::endpoint &from,
-                                                             const polymorph::network::PacketHeader &header,
+void polymorph::network::udp::ServerImpl::_handleSessionTransfer(const asio::ip::udp::endpoint&,
+                                                             const polymorph::network::PacketHeader&,
                                                              const std::vector<std::byte> &bytes)
 {
     auto packet = SerializerTrait<Packet<SessionTransferRequestDto>>::deserialize(bytes);
@@ -177,7 +177,7 @@ void polymorph::network::udp::ServerImpl::_sendTo(polymorph::network::OpId opId,
     header.pId = id;
     header.opId = opId;
     header.sId = sessionId;
-    header.pSize = data.size();
+    header.pSize = static_cast<std::uint16_t>(data.size());
     std::vector<std::byte> sPacket = SerializerTrait<PacketHeader>::serialize(header);
     sPacket.insert(sPacket.end(), data.begin(), data.end());
     _packetManager.storeOf(endpoint).addToSendList(header, sPacket);

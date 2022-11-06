@@ -110,7 +110,7 @@ void polymorph::network::udp::ClientImpl::_send(polymorph::network::OpId opId, c
     header.pId = _currentPacketId;
     header.opId = opId;
     header.sId = _currentSession;
-    header.pSize = payload.size();
+    header.pSize = static_cast<std::uint16_t>(payload.size());
     std::vector<std::byte> sPacket = SerializerTrait<PacketHeader>::serialize(header);
     sPacket.insert(sPacket.end(), payload.begin(), payload.end());
     _packetStore.addToSendList(header, sPacket);

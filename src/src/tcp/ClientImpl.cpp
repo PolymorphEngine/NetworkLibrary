@@ -140,7 +140,7 @@ void polymorph::network::tcp::ClientImpl::_send(polymorph::network::OpId opId, c
     header.pId = _currentPacketId;
     header.opId = opId;
     header.sId = _currentSession;
-    header.pSize = data.size();
+    header.pSize = static_cast<std::uint16_t>(data.size());
     std::vector<std::byte> sPacket = SerializerTrait<PacketHeader>::serialize(header);
     sPacket.insert(sPacket.end(), data.begin(), data.end());
     std::unique_lock<std::mutex> lock(_sendQueueMutex);

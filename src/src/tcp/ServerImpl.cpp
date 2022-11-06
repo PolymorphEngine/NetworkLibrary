@@ -60,7 +60,7 @@ void polymorph::network::tcp::ServerImpl::_sendTo(polymorph::network::OpId opId,
     header.opId = opId;
     header.pId = pId;
     header.sId = sessionId;
-    header.pSize = data.size();
+    header.pSize = static_cast<std::uint16_t>(data.size());
     auto serialized = SerializerTrait<PacketHeader>::serialize(header);
     serialized.insert(serialized.end(), data.begin(), data.end());
     connection->send(serialized, callback);
@@ -76,7 +76,7 @@ void polymorph::network::tcp::ServerImpl::_send(polymorph::network::OpId opId, c
         header.opId = opId;
         header.pId = pId;
         header.sId = connection->getSessionId();
-        header.pSize = data.size();
+        header.pSize = static_cast<std::uint16_t>(data.size());
         auto serialized = SerializerTrait<PacketHeader>::serialize(header);
         serialized.insert(serialized.end(), data.begin(), data.end());
         connection->send(serialized, std::function<void (const PacketHeader &, const std::vector<std::byte> &)>());
