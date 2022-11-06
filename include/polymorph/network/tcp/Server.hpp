@@ -9,6 +9,7 @@
 #pragma once
 
 #include <iostream>
+#include <memory>
 #include "polymorph/network/tcp/IPacketHandler.hpp"
 
 namespace polymorph::network { class SessionStore; }

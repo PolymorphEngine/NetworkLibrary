@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <memory>
 #include "polymorph/network/udp/IPacketHandler.hpp"
 #include "polymorph/network/dto/ACKDto.hpp"
 
