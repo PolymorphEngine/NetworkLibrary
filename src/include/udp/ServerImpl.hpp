@@ -12,7 +12,7 @@
 #include "udp/ServerPacketManager.hpp"
 #include "udp/PacketStore.hpp"
 #include "udp/AConnector.hpp"
-#include "polymorph/network/SessionStore.hpp"
+#include "SessionStore.hpp"
 #include "polymorph/network/udp/Server.hpp"
 
 namespace polymorph::network::udp
