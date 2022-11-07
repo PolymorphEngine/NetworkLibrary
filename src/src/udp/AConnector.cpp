@@ -34,12 +34,14 @@ void polymorph::network::udp::AConnector::startConnection()
 
 void polymorph::network::udp::AConnector::_doReceive()
 {
+    _receiveInProgress = false;
     _socket.async_receive_from(asio::buffer(_receiveBuffer), _endpoint,
        [this](const asio::error_code &error, std::size_t bytesReceived) {
            if (error) {
                std::cerr << "Error while receiving data: " << error.message() << std::endl;
                return;
            }
+           _receiveInProgress = true;
            std::vector<std::byte> data(_receiveBuffer.begin(), _receiveBuffer.begin() + bytesReceived);
            _determinePacket(data);
            _doReceive();
@@ -80,9 +82,18 @@ void polymorph::network::udp::AConnector::_determinePacket(const std::vector<std
     }
 
     if (header.opId == ACKDto::opId) {
-        auto packet = SerializerTrait<Packet<ACKDto>>::deserialize(data);
-        _ackReceived(_endpoint, packet.payload.id);
+        _ackReceived(_endpoint, header, data);
     } else {
         _packetReceived(_endpoint, data);
     }
+}
+
+bool polymorph::network::udp::AConnector::isWriteInProgress() const
+{
+    return _writeInProgress;
+}
+
+bool polymorph::network::udp::AConnector::isReceiveInProgress() const
+{
+    return _receiveInProgress;
 }

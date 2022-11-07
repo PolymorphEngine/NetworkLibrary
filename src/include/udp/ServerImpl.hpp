@@ -30,7 +30,7 @@ namespace polymorph::network::udp
              */
             ServerImpl(std::uint16_t port, std::map<OpId, bool> safeties);
 
-            ~ServerImpl() override = default;
+            ~ServerImpl() override;
 
 
             //////////////////////--------------------------/////////////////////////
@@ -97,7 +97,7 @@ namespace polymorph::network::udp
              * @param from The recipient of the initial packet
              * @param acknowledgedId The acknowledged packet id
              */
-            void _ackReceived(const asio::ip::udp::endpoint &from, PacketId acknowledgedId) override;
+            void _ackReceived(const asio::ip::udp::endpoint &from, const PacketHeader &header, const std::vector<std::byte> &bytes) override;
 
             /**
              * @brief Method called when a packet is sent, it confirms the sent and enable the auto re-send feature for safe packets

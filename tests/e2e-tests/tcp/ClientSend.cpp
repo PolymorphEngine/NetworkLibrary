@@ -23,7 +23,7 @@ TEST(tcpE2E, ClientSend)
     // Server Setup
     auto server = Server::create(4242);
     server->start();
-    server->registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
+    server->registerReceiveHandler<std::uint16_t>(10, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
@@ -42,7 +42,7 @@ TEST(tcpE2E, ClientSend)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    client->send(3, input_data);
+    client->send(10, input_data);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_data, output_data);
 }
@@ -60,7 +60,7 @@ TEST(tcpE2E, ClientSendCallback)
     // Server Setup
     auto server = Server::create(4242);
     server->start();
-    server->registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
+    server->registerReceiveHandler<std::uint16_t>(10, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
         return true;
     });
@@ -79,7 +79,7 @@ TEST(tcpE2E, ClientSendCallback)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    client->send<std::uint16_t>(3, input_data, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
+    client->send<std::uint16_t>(10, input_data, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
         passed = true;
     });
     // server.sendTo(2, input_data, id); NOT WORKING LA PTN DE SA
@@ -103,7 +103,7 @@ TEST(tcpE2E, TwoClientsSamePayloadype)
     // Server Setup
     auto server = Server::create(4242);
     server->start();
-    server->registerReceiveHandler<std::uint16_t>(3, [&output_data, &ids](const PacketHeader &header, uint16_t payload) {
+    server->registerReceiveHandler<std::uint16_t>(10, [&output_data, &ids](const PacketHeader &header, uint16_t payload) {
         output_data = payload;
         ids.push_back(header.sId);
         return true;
@@ -127,7 +127,7 @@ TEST(tcpE2E, TwoClientsSamePayloadype)
         PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
         ASSERT_TRUE(connected);
     }
-    client->send<std::uint16_t>(3, input_data);
+    client->send<std::uint16_t>(10, input_data);
 
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_data, output_data);
@@ -143,7 +143,7 @@ TEST(tcpE2E, TwoClientsSamePayloadype)
         ASSERT_TRUE(connected);
         ASSERT_NE(id, id2);
     }
-    client2->send<std::uint16_t>(3, input_data2, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
+    client2->send<std::uint16_t>(10, input_data2, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
         passed = true;
     });
     // server.sendTo(2, input_data, id); NOT WORKING LA PTN DE SA
