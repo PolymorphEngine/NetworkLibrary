@@ -30,8 +30,9 @@ void polymorph::network::SessionStore::registerAuthoredClient(asio::ip::udp::end
 
 polymorph::network::SessionId polymorph::network::SessionStore::registerClient(asio::ip::udp::endpoint endpoint)
 {
-    auto sId = _findAvailableUdpSessionId();
     std::lock_guard<std::mutex> lock(_udpSessionsMutex);
+    auto sId = _nextUdpSessionId;
+    ++_nextUdpSessionId;
 
     if (_udpSessions.contains(endpoint))
         return _udpSessions[endpoint];
@@ -56,8 +57,9 @@ void polymorph::network::SessionStore::registerAuthoredClient(asio::ip::tcp::end
 
 polymorph::network::SessionId polymorph::network::SessionStore::registerClient(asio::ip::tcp::endpoint endpoint)
 {
-    auto sId = _findAvailableTcpSessionId();
     std::lock_guard<std::mutex> lock(_tcpSessionsMutex);
+    auto sId = _nextTcpSessionId;
+    ++_nextTcpSessionId;
 
     if (_tcpSessions.contains(endpoint))
         throw exceptions::AlreadyRegisteredException("Client already connected");
@@ -167,26 +169,6 @@ polymorph::network::SessionStore::generateTcpAuthorizationKey(polymorph::network
     auto key = authorizationKey::generate();
     _tcpSessionsAuthorizationKeys.emplace(sessionId, key);
     return key;
-}
-
-polymorph::network::SessionId polymorph::network::SessionStore::_findAvailableTcpSessionId()
-{
-    std::lock_guard<std::mutex> lock(_tcpSessionsMutex);
-    SessionId i = 0;
-
-    while (std::find_if(_tcpSessions.begin(), _tcpSessions.end(), [&i](auto &p) { return p.second == i; }) != _tcpSessions.end())
-        ++i;
-    return i;
-}
-
-polymorph::network::SessionId polymorph::network::SessionStore::_findAvailableUdpSessionId()
-{
-    std::lock_guard<std::mutex> lock(_udpSessionsMutex);
-    SessionId i = 0;
-
-    while (std::find_if(_udpSessions.begin(), _udpSessions.end(), [&i](auto &p) { return p.second == i; }) != _udpSessions.end())
-        ++i;
-    return i;
 }
 
 polymorph::network::SessionStore::SessionStore(const polymorph::network::SessionStore &other)
