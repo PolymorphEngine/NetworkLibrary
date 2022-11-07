@@ -15,6 +15,7 @@
 #include "polymorph/network/dto/ACKDto.hpp"
 #include "polymorph/network/dto/SessionTransferRequestDto.hpp"
 #include "polymorph/network/dto/SessionTransferResponseDto.hpp"
+#include "polymorph/network/dto/DisconnectionDto.hpp"
 
 std::unique_ptr<polymorph::network::udp::Server> polymorph::network::udp::Server::create(uint16_t port, std::map<OpId, bool> safeties)
 {
@@ -40,16 +41,17 @@ polymorph::network::udp::ServerImpl::ServerImpl(std::uint16_t port, std::map<OpI
     _safeties[ConnectionResponseDto::opId] = true;
     _safeties[ACKDto::opId] = false;
     _safeties[SessionTransferResponseDto::opId] = true;
+    _safeties[DisconnectionDto::opId] = true;
 }
 
-void polymorph::network::udp::ServerImpl::_ackReceived(const asio::ip::udp::endpoint &from,
-                                                   polymorph::network::PacketId acknowledgedId)
+void polymorph::network::udp::ServerImpl::_ackReceived(const asio::ip::udp::endpoint &from, const PacketHeader &header, const std::vector<std::byte> &bytes)
 {
     if (!_packetManager.hasClient(from)) {
         std::cerr << "Received ack from unknown client!" << std::endl;
         return;
     }
-    _packetManager.storeOf(from).confirmReceived(acknowledgedId);
+    auto packet = SerializerTrait<Packet<ACKDto>>::deserialize(bytes);
+    _packetManager.storeOf(from).confirmReceived(packet.payload.id);
 }
 
 void polymorph::network::udp::ServerImpl::_packetSent(const asio::ip::udp::endpoint &to,
@@ -205,4 +207,12 @@ void polymorph::network::udp::ServerImpl::_send(polymorph::network::OpId opId, c
     for (auto &session : sessions) {
         _sendTo(opId, data, session, std::function<void(const PacketHeader &, const std::vector<std::byte> &)>());
     }
+}
+
+polymorph::network::udp::ServerImpl::~ServerImpl()
+{
+    while(isWriteInProgress() || isReceiveInProgress())
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    if (!_context.stopped())
+        _context.stop();
 }

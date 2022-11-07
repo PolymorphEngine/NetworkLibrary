@@ -9,6 +9,7 @@
 #include "tcp/ClientImpl.hpp"
 #include "polymorph/network/dto/ConnectionDto.hpp"
 #include "polymorph/network/dto/ConnectionResponseDto.hpp"
+#include "polymorph/network/dto/DisconnectionDto.hpp"
 
 std::unique_ptr<polymorph::network::tcp::Client> polymorph::network::tcp::Client::create(std::string host, std::uint16_t port)
 {
@@ -126,6 +127,18 @@ void polymorph::network::tcp::ClientImpl::_doReceive()
 
 polymorph::network::tcp::ClientImpl::~ClientImpl()
 {
+    polymorph::network::DisconnectionDto dto;
+    std::promise<void> promise;
+    auto future = promise.get_future();
+
+    while (_writeInProgress) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+
+    send<polymorph::network::DisconnectionDto>(polymorph::network::DisconnectionDto::opId, dto, [&promise](const PacketHeader &header, const polymorph::network::DisconnectionDto &payload) {
+        promise.set_value();
+    });
+    future.wait_for(std::chrono::seconds(1));
     if (!_context.stopped())
         _context.stop();
 }

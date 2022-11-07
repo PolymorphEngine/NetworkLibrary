@@ -62,6 +62,8 @@ namespace polymorph::network::udp {
              */
             std::atomic<bool> _writeInProgress;
 
+            std::atomic<bool> _receiveInProgress;
+
             std::mutex _sendQueueMutex;
 
             asio::ip::udp::endpoint _endpoint;
@@ -84,6 +86,10 @@ namespace polymorph::network::udp {
              * @brief Start the receive and run the io_context
              */
             void startConnection();
+
+            bool isWriteInProgress() const;
+
+            bool isReceiveInProgress() const;
 
         private:
             /**

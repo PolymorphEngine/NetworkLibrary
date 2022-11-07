@@ -26,7 +26,7 @@ namespace polymorph::network::udp
         public:
             ClientImpl(std::string host, std::uint16_t port, std::map<OpId, bool> safeties);
 
-            ~ClientImpl() override = default;
+            ~ClientImpl() override;
 
 
 //////////////////////--------------------------/////////////////////////
@@ -53,7 +53,9 @@ namespace polymorph::network::udp
 
 /////////////////////////////// METHODS /////////////////////////////////
         public:
-            void _ackReceived(const asio::ip::udp::endpoint& from, PacketId acknoledgedId) override;
+            void _ackReceived(const asio::ip::udp::endpoint &to,
+                              const polymorph::network::PacketHeader &header,
+                              const std::vector<std::byte> &bytes) override;
 
             void _packetSent(const asio::ip::udp::endpoint& to, const PacketHeader &header, const std::vector<std::byte> &bytes) override;
 
