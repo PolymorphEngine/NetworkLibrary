@@ -84,6 +84,10 @@ void polymorph::network::tcp::ClientImpl::_doSend()
     std::lock_guard<std::mutex> lock(_sendQueueMutex);
     auto& p = _sendQueue.front();
     _socket.async_send(asio::buffer(p.first), [this](const asio::error_code &error, std::size_t /* bytesSent */) mutable {
+        if (error == asio::error::operation_aborted) {
+            _writeInProgress = false;
+            return;
+        }
         if (error) {
             std::cerr << "Error while sending packet: " << error.message() << std::endl;
             return;
@@ -131,16 +135,17 @@ polymorph::network::tcp::ClientImpl::~ClientImpl()
     std::promise<void> promise;
     auto future = promise.get_future();
 
-    while (_writeInProgress) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
-
     send<polymorph::network::DisconnectionDto>(polymorph::network::DisconnectionDto::opId, dto, [&promise](const PacketHeader &header, const polymorph::network::DisconnectionDto &payload) {
         promise.set_value();
     });
     future.wait_for(std::chrono::seconds(1));
+
     if (!_context.stopped())
         _context.stop();
+
+    while (_writeInProgress) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
 }
 
 void polymorph::network::tcp::ClientImpl::_send(polymorph::network::OpId opId, const std::vector<std::byte> &data, std::function<void(const PacketHeader &, const std::vector<std::byte> &)> callback)
