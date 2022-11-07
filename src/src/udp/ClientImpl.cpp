@@ -7,12 +7,14 @@
 
 
 #include <iostream>
+#include <future>
 #include "udp/ClientImpl.hpp"
 #include "polymorph/network/dto/ConnectionDto.hpp"
 #include "polymorph/network/dto/ConnectionResponseDto.hpp"
 #include "polymorph/network/dto/ACKDto.hpp"
 #include "udp/SafePacketManager.hpp"
 #include "polymorph/network/dto/SessionTransferRequestDto.hpp"
+#include "polymorph/network/dto/DisconnectionDto.hpp"
 
 std::unique_ptr<polymorph::network::udp::Client> polymorph::network::udp::Client::create(std::string host, std::uint16_t port, std::map<OpId, bool> safeties)
 {
@@ -40,18 +42,39 @@ polymorph::network::udp::ClientImpl::ClientImpl(std::string host, std::uint16_t 
     _safeties[ConnectionDto::opId] = true;
     _safeties[ACKDto::opId] = false;
     _safeties[SessionTransferRequestDto::opId] = true;
+    _safeties[DisconnectionDto::opId] = true;
 }
 
-void polymorph::network::udp::ClientImpl::_ackReceived(const asio::ip::udp::endpoint&, polymorph::network::PacketId acknoledgedId)
+polymorph::network::udp::ClientImpl::~ClientImpl()
 {
-    _packetStore.confirmReceived(acknoledgedId);
+    DisconnectionDto dto;
+    std::promise<void> promise;
+    auto future = promise.get_future();
+
+    while (isWriteInProgress() || isReceiveInProgress()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    Client::send<DisconnectionDto>(polymorph::network::DisconnectionDto::opId, dto, [&promise](const PacketHeader &header, const DisconnectionDto &payload) {
+        promise.set_value();
+    });
+    future.wait_for(std::chrono::seconds(1));
+    if (!_context.stopped())
+        _context.stop();
+}
+
+void polymorph::network::udp::ClientImpl::_ackReceived(const asio::ip::udp::endpoint &to,
+                                                       const polymorph::network::PacketHeader &header,
+                                                       const std::vector<std::byte> &bytes)
+{
+    auto packet = SerializerTrait<Packet<ACKDto>>::deserialize(bytes);
+    _packetStore.confirmReceived(packet.payload.id);
+    _callAndPopSendCallback(to, header, bytes);
 }
 
 void polymorph::network::udp::ClientImpl::_packetSent(const asio::ip::udp::endpoint& to, const polymorph::network::PacketHeader &header,
                                                   const std::vector<std::byte> &bytes)
 {
     _packetStore.confirmSent(to, header.pId);
-    _callAndPopSendCallback(to, header, bytes);
 }
 
 void polymorph::network::udp::ClientImpl::connect(std::function<void(bool, SessionId session)> callback)

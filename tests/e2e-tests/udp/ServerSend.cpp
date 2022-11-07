@@ -20,7 +20,7 @@ TEST(udpE2E, ServerSend)
     using namespace polymorph::network;
     using namespace polymorph::network::udp;
     std::map<OpId, bool> safeties = {
-            { 2, true }
+            { 10, true }
     };
 
     // Server Setup
@@ -29,7 +29,7 @@ TEST(udpE2E, ServerSend)
 
     // Client Setup
     auto client = Client::create("127.0.0.1", 4242, safeties);
-    client->registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    client->registerReceiveHandler<std::uint16_t>(10, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
 
@@ -44,7 +44,7 @@ TEST(udpE2E, ServerSend)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server->send(2, input_data);
+    server->send(10, input_data);
     // server.sendTo(2, input_data, id); NOT WORKING LA PTN DE SA
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_data, output_data);
@@ -61,8 +61,8 @@ TEST(udpE2E, OpIdDispatchServerSend)
     using namespace polymorph::network;
     using namespace polymorph::network::udp;
     std::map<OpId, bool> safeties = {
-            { 2, true },
-            { 3, true }
+            { 10, true },
+            { 11, true }
     };
 
     // Server Setup
@@ -71,10 +71,10 @@ TEST(udpE2E, OpIdDispatchServerSend)
 
     // Client Setup
     auto client = Client::create("127.0.0.1", 4242, safeties);
-    client->registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    client->registerReceiveHandler<std::uint16_t>(10, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
-    client->registerReceiveHandler<std::uint8_t>(3, [&output_char](const PacketHeader &, std::uint8_t payload) {
+    client->registerReceiveHandler<std::uint8_t>(11, [&output_char](const PacketHeader &, std::uint8_t payload) {
         output_char = payload;
     });
 
@@ -89,8 +89,8 @@ TEST(udpE2E, OpIdDispatchServerSend)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server->send(3, input_char);
-    server->send(2, input_data);
+    server->send(11, input_char);
+    server->send(10, input_data);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_char, output_char);
     ASSERT_EQ(input_data, output_data);
@@ -106,7 +106,7 @@ TEST(udpE2E, ServerDispatchToAllClients)
     using namespace polymorph::network;
     using namespace polymorph::network::udp;
     std::map<OpId, bool> safeties = {
-            { 2, true }
+            { 10, true }
     };
 
     // Server Setup
@@ -115,14 +115,14 @@ TEST(udpE2E, ServerDispatchToAllClients)
 
     // Client1 Setup
     auto client1 = Client::create("127.0.0.1", 4242, safeties);
-    client1->registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+    client1->registerReceiveHandler<std::uint16_t>(10, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client1Passed = true;
     });
 
     // Client2 Setup
     auto client2 = Client::create("127.0.0.1", 4242, safeties);
-    client2->registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+    client2->registerReceiveHandler<std::uint16_t>(10, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client2Passed = true;
     });
@@ -146,7 +146,7 @@ TEST(udpE2E, ServerDispatchToAllClients)
     PNL_WAIT_COND_LOOP(!connected1 || !connected2, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected1);
     ASSERT_TRUE(connected2);
-    server->send(2, checkPayload);
+    server->send(10, checkPayload);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(client1Passed);
     ASSERT_TRUE(client2Passed);
@@ -162,7 +162,7 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     using namespace polymorph::network;
     using namespace polymorph::network::udp;
     std::map<OpId, bool> safeties = {
-            { 2, true }
+            { 10, true }
     };
 
     // Server Setup
@@ -171,14 +171,14 @@ TEST(udpE2E, ServerSendOnlyOneClient)
 
     // Client1 Setup
     auto client1 = Client::create("127.0.0.1", 4242, safeties);
-    client1->registerReceiveHandler<std::uint16_t>(2, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+    client1->registerReceiveHandler<std::uint16_t>(10, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client1Passed = true;
     });
 
     // Client2 Setup
     auto client2 = Client::create("127.0.0.1", 4242, safeties);
-    client2->registerReceiveHandler<std::uint16_t>(2, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
+    client2->registerReceiveHandler<std::uint16_t>(10, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
         ASSERT_EQ(payload, checkPayload);
         client2Passed = false;
     });
@@ -202,7 +202,7 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     PNL_WAIT_COND_LOOP(!connected1 || !connected2, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected1);
     ASSERT_TRUE(connected2);
-    server->sendTo(2, checkPayload, id1);
+    server->sendTo(10, checkPayload, id1);
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(client1Passed);
     ASSERT_TRUE(client2Passed);
@@ -218,7 +218,7 @@ TEST(udpE2E, ServerSendCallback)
     using namespace polymorph::network;
     using namespace polymorph::network::udp;
     std::map<OpId, bool> safeties = {
-            { 2, true }
+            { 10, true }
     };
 
     // Server Setup
@@ -227,7 +227,7 @@ TEST(udpE2E, ServerSendCallback)
 
     // Client Setup
     auto client = Client::create("127.0.0.1", 4242, safeties);
-    client->registerReceiveHandler<std::uint16_t>(2, [&output_data](const PacketHeader &, uint16_t payload) {
+    client->registerReceiveHandler<std::uint16_t>(10, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
     });
 
@@ -242,7 +242,7 @@ TEST(udpE2E, ServerSendCallback)
 
     PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
     ASSERT_TRUE(connected);
-    server->sendTo<std::uint16_t>(2, input_data, id, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
+    server->sendTo<std::uint16_t>(10, input_data, id, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
         passed = true;
     });
     PNL_WAIT(PNL_TIME_OUT)

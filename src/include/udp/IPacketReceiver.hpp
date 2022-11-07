@@ -10,6 +10,7 @@
 #include <asio/ip/udp.hpp>
 #include "polymorph/network/types.hpp"
 #include "polymorph/network/PacketHeader.hpp"
+#include "polymorph/network/Packet.hpp"
 
 namespace polymorph::network::udp
 {
@@ -33,9 +34,11 @@ namespace polymorph::network::udp
             /**
              * @brief Handle a received ack packet
              * @param from The endpoint of the client who sent the packet
-             * @param acknoledgedId The id of the packet that has been acknoledged
+             * @param header The id of the packet that has been acknoledged
              */
-            virtual void _ackReceived(const asio::ip::udp::endpoint& from, PacketId acknoledgedId) = 0;
+            virtual void _ackReceived(const asio::ip::udp::endpoint &from,
+                                      const polymorph::network::PacketHeader &header,
+                                      const std::vector<std::byte> &bytes) = 0;
 
             /**
              * @brief Handle a sent packet
