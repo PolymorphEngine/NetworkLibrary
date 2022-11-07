@@ -49,6 +49,16 @@ namespace polymorph::network
             std::unordered_map<asio::ip::tcp::endpoint, SessionId> _tcpSessions;
 
             /**
+             * @property Next SessionID that will be assigned to a new tcp client
+             */
+            SessionId _nextTcpSessionId{0};
+
+            /**
+             * @property Next SessionID that will be assigned to a new udp client
+             */
+            SessionId _nextUdpSessionId{0};
+
+            /**
              * @property Emitted authorization keys to recover sessionId on udp connection
              */
             std::map<SessionId, AuthorizationKey> _udpSessionsAuthorizationKeys;
@@ -176,15 +186,6 @@ namespace polymorph::network
 
 
         private:
-            /**
-             * @brief find the smallest available sessionId in the tcp sessions
-             */
-            SessionId _findAvailableTcpSessionId();
-
-            /**
-             * @brief find the smallest available sessionId in the udp sessions
-             */
-            SessionId _findAvailableUdpSessionId();
 
 
 //////////////////////--------------------------/////////////////////////
