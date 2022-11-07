@@ -95,6 +95,7 @@ TEST(tcpE2E, TwoClientsSamePayloadype)
     std::uint16_t input_data2 = 84;
     std::uint16_t output_data = 0;
     bool passed = false;
+    std::vector<polymorph::network::SessionId> ids;
 
     using namespace polymorph::network;
     using namespace polymorph::network::tcp;
@@ -102,8 +103,9 @@ TEST(tcpE2E, TwoClientsSamePayloadype)
     // Server Setup
     auto server = Server::create(4242);
     server->start();
-    server->registerReceiveHandler<std::uint16_t>(3, [&output_data](const PacketHeader &, uint16_t payload) {
+    server->registerReceiveHandler<std::uint16_t>(3, [&output_data, &ids](const PacketHeader &header, uint16_t payload) {
         output_data = payload;
+        ids.push_back(header.sId);
         return true;
     });
 
@@ -147,6 +149,8 @@ TEST(tcpE2E, TwoClientsSamePayloadype)
     // server.sendTo(2, input_data, id); NOT WORKING LA PTN DE SA
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_EQ(input_data2, output_data);
+    ASSERT_EQ(ids.size(), 2);
+    ASSERT_NE(ids[0], ids[1]);
     ASSERT_TRUE(passed);
 }
 

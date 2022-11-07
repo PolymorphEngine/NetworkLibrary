@@ -93,6 +93,75 @@ TEST(udpE2E, ClientSendCallback)
     ASSERT_TRUE(passed);
 }
 
+TEST(udpE2E, TwoClientsSamePayloadype)
+{
+    //checks
+    std::uint16_t input_data = 42;
+    std::uint16_t input_data2 = 84;
+    std::uint16_t output_data = 0;
+    bool passed = false;
+    std::vector<polymorph::network::SessionId> ids;
+
+    using namespace polymorph::network;
+    using namespace polymorph::network::udp;
+
+    // Server Setup
+    std::map<OpId, bool> safeties = {
+            { 3, true }
+    };
+    auto server = Server::create(4242, safeties);
+    server->start();
+    server->registerReceiveHandler<std::uint16_t>(3, [&output_data, &ids](const PacketHeader &header, uint16_t payload) {
+        output_data = payload;
+        ids.push_back(header.sId);
+        return true;
+    });
+
+    // Client Setup
+    auto client = Client::create("127.0.0.1", 4242, safeties);
+    auto client2 = Client::create("127.0.0.1", 4242, safeties);
+
+    // Client Infos
+    SessionId id;
+    SessionId id2;
+    bool connected = false;
+
+    client->connect([&id, &connected](bool authorized, SessionId sId) {
+        connected = authorized;
+        id = sId;
+    });
+
+    {
+        PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
+        ASSERT_TRUE(connected);
+    }
+    client->send<std::uint16_t>(3, input_data);
+
+    PNL_WAIT(PNL_TIME_OUT)
+    ASSERT_EQ(input_data, output_data);
+
+    connected = false;
+    client2->connect([&id2, &connected](bool authorized, SessionId sId) {
+        connected = authorized;
+        id2 = sId;
+    });
+
+    {
+        PNL_WAIT_COND_LOOP(!connected, PNL_TIME_OUT, 5)
+        ASSERT_TRUE(connected);
+        ASSERT_NE(id, id2);
+    }
+    client2->send<std::uint16_t>(3, input_data2, [&passed](const PacketHeader &header, const std::uint16_t &payload) {
+        passed = true;
+    });
+    // server.sendTo(2, input_data, id); NOT WORKING LA PTN DE SA
+    PNL_WAIT(PNL_TIME_OUT)
+    ASSERT_EQ(input_data2, output_data);
+    ASSERT_EQ(ids.size(), 2);
+    ASSERT_NE(ids[0], ids[1]);
+    ASSERT_TRUE(passed);
+}
+
 #ifdef PNL_CLIENT_TEST
 #if PNL_CLIENT_TEST == 1
 TEST(udpE2E, SafetyClientSend)
