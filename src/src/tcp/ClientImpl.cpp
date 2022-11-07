@@ -42,6 +42,7 @@ void polymorph::network::tcp::ClientImpl::connect(std::function<void(bool, Sessi
 
         registerReceiveHandler<ConnectionResponseDto>(ConnectionResponseDto::opId, [this, callback](const PacketHeader &header, const ConnectionResponseDto &payload) {
             _isConnected = payload.authorized;
+            _currentSession = header.sId;
             callback(payload.authorized, header.sId);
             return true;
         });
