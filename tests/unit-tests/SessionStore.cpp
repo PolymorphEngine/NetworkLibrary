@@ -284,3 +284,14 @@ TEST(SessionStoreTests, CopyTcpAuthorizationKeys)
         copy.registerAuthoredClient(endpoint4, session3, key3);
     });
 }
+
+TEST(SessionStoreTests, ShouldNotDeliverSameId)
+{
+    using namespace polymorph::network;
+    SessionStore store;
+    auto endpoint1 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.1"), 1);
+    auto endpoint2 = asio::ip::tcp::endpoint(asio::ip::make_address_v4("127.0.0.2"), 2);
+    auto session1 = store.registerClient(endpoint1);
+    auto session2 = store.registerClient(endpoint2);
+    ASSERT_NE(session1, session2);
+}
