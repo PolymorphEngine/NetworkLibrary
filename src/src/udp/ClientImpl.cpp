@@ -47,6 +47,8 @@ polymorph::network::udp::ClientImpl::ClientImpl(std::string host, std::uint16_t 
 
 polymorph::network::udp::ClientImpl::~ClientImpl()
 {
+    if (!_isConnected)
+        return;
     DisconnectionDto dto;
     std::promise<void> promise;
     auto future = promise.get_future();
