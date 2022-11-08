@@ -80,7 +80,7 @@ TEST(udpE2E, OpIdDispatchServerSend)
 
     // Client Infos
     SessionId id;
-    bool connected = false;
+    std::atomic<bool> connected = false;
 
     client->connect([&id, &connected](bool authorized, SessionId sId) {
         connected = authorized;
