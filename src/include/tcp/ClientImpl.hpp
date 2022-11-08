@@ -87,7 +87,17 @@ namespace polymorph::network::tcp
             /**
              * @property    Atomic boolean to know if the ClientImpl is already sending a packet
              */
-            std::atomic<bool> _writeInProgress;
+            std::atomic<bool> _writeInProgress = false;
+
+            /**
+             * @property    Atomic boolean to know if the ClientImpl is receiving a packet
+             */
+            std::atomic<bool> _receiveInProgress = false;
+
+            /**
+             * @property    Atomic boolean to know if the ClientImpl is already sending a packet
+             */
+            std::atomic<bool> _stopping = false;
 
             /**
              * @property    Mutex to lock the send queue and ensure thread safety
