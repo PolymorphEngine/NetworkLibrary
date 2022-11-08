@@ -211,8 +211,8 @@ void polymorph::network::udp::ServerImpl::_send(polymorph::network::OpId opId, c
 
 polymorph::network::udp::ServerImpl::~ServerImpl()
 {
-    while(isWriteInProgress() || isReceiveInProgress())
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     if (!_context.stopped())
         _context.stop();
+    while(isWriteInProgress() || isReceiveInProgress())
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
 }
