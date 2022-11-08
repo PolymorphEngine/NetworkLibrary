@@ -2,12 +2,13 @@
 #include <functional>
 #include <any>
 #include <map>
+#include <asio/ip/address_v4.hpp>
+
 #include "polymorph/network/udp/Client.hpp"
 #include "polymorph/network/udp/Server.hpp"
-#include "polymorph/network/udp/AConnector.hpp"
 #include "e2e-tests/utils.hpp"
 
-
+/*
 int main(){
     //checks
     std::uint16_t input_data = 42;
@@ -53,5 +54,11 @@ int main(){
     server.send(3, input_char);
     server.send(2, input_data);
     PNL_WAIT(PNL_TIME_OUT)
+    return 0;
+}
+ */
+
+int main() {
+    asio::ip::make_address_v4("127.0.0.1");
     return 0;
 }

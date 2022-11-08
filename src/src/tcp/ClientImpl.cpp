@@ -109,13 +109,15 @@ void polymorph::network::tcp::ClientImpl::_doSend()
 
 void polymorph::network::tcp::ClientImpl::_doReceive()
 {
+    _receiveInProgress = false;
     _socket.async_receive(asio::buffer(_internalBuffer), [this](const asio::error_code &error, std::size_t bytesReceived) {
-        if (error == asio::error::operation_aborted || error == asio::error::eof)
+        if (error == asio::error::operation_aborted || error == asio::error::eof || _stopping)
             return;
         if (error) {
             std::cerr << "Error while receiving packet: " << error.message() << std::endl;
             return;
         }
+        _receiveInProgress = true;
         _receiveBuffer.insert(_receiveBuffer.end(), _internalBuffer.begin(), _internalBuffer.begin() + bytesReceived);
         while (_receiveBuffer.size() > sizeof(PacketHeader) ) {
             auto header = SerializerTrait<PacketHeader>::deserialize(_receiveBuffer);
@@ -144,8 +146,8 @@ polymorph::network::tcp::ClientImpl::~ClientImpl()
 
     if (!_context.stopped())
         _context.stop();
-
-    while (_writeInProgress) {
+    _stopping = true;
+    while (_writeInProgress || _receiveInProgress) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
 }
