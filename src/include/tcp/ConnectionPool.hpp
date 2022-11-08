@@ -10,6 +10,7 @@
 
 #include <set>
 #include <vector>
+#include <atomic>
 #include "tcp/IConnectionPool.hpp"
 #include "polymorph/network/types.hpp"
 
@@ -79,7 +80,6 @@ namespace polymorph::network::tcp
              * @return  std::vector<Connection>    The connections stored in the pool
              */
             std::shared_ptr<IClientConnection> getConnectionBySessionId(SessionId id);
-
 
 
         private:

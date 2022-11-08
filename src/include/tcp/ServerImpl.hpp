@@ -56,6 +56,10 @@ namespace polymorph::network::tcp
              */
             asio::ip::tcp::acceptor _acceptor;
 
+            std::atomic<int> _sendingCount = 0;
+
+            std::atomic<int> _receivingCount = 0;
+
 
 //////////////////////--------------------------/////////////////////////
 
@@ -82,6 +86,18 @@ namespace polymorph::network::tcp
             AuthorizationKey generateUdpAuthorizationKey(SessionId sessionId) override;
 
             AuthorizationKey generateTcpAuthorizationKey(SessionId sessionId) override;
+
+            void declareSending();
+
+            void declareSendingDone();
+
+            bool isSending();
+
+            void declareReceiving();
+
+            void declareReceivingDone();
+
+            bool isReceiving();
 
 
 

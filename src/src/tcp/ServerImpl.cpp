@@ -42,6 +42,9 @@ polymorph::network::tcp::ServerImpl::~ServerImpl()
 {
     if (!_context.stopped())
         _context.stop();
+    while (isSending() || isReceiving()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
 }
 
 void polymorph::network::tcp::ServerImpl::_sendTo(polymorph::network::OpId opId, const std::vector<std::byte> &data,
@@ -127,4 +130,36 @@ polymorph::network::AuthorizationKey
 polymorph::network::tcp::ServerImpl::generateTcpAuthorizationKey(polymorph::network::SessionId sessionId)
 {
     return _sessionStore.generateTcpAuthorizationKey(sessionId);
+}
+
+void polymorph::network::tcp::ServerImpl::declareSending()
+{
+    _sendingCount++;
+}
+
+void polymorph::network::tcp::ServerImpl::declareSendingDone()
+{
+    if (_sendingCount > 0)
+        _sendingCount--;
+}
+
+bool polymorph::network::tcp::ServerImpl::isSending()
+{
+    return _sendingCount > 0;
+}
+
+void polymorph::network::tcp::ServerImpl::declareReceiving()
+{
+    _receivingCount++;
+}
+
+void polymorph::network::tcp::ServerImpl::declareReceivingDone()
+{
+    if (_receivingCount > 0)
+        _receivingCount--;
+}
+
+bool polymorph::network::tcp::ServerImpl::isReceiving()
+{
+    return _receivingCount > 0;
 }

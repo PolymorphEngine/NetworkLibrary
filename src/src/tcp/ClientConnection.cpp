@@ -37,6 +37,7 @@ void polymorph::network::tcp::ClientConnection::send(std::vector<std::byte> data
     _sendQueue.emplace(std::move(data), std::move(callback));
     if (!_writeInProgress.exchange(true)) {
         lock.unlock();
+        _packetHandler.declareSending();
         _doSend();
     }
 }
@@ -49,6 +50,7 @@ void polymorph::network::tcp::ClientConnection::_doSend()
     _socket.async_send(asio::buffer(p.first), [this, self](const asio::error_code &error, std::size_t /* bytesSent */) {
         if (error || _stopped) {
             _stopped = true;
+            _packetHandler.declareSendingDone();
             if (!_connectionPool.expired())
                 _connectionPool.lock()->leave(shared_from_this());
             return;
@@ -61,6 +63,7 @@ void polymorph::network::tcp::ClientConnection::_doSend()
         _sendQueue.pop();
         if (_sendQueue.empty()) {
             _writeInProgress = false;
+            _packetHandler.declareSendingDone();
             return;
         }
         lock.unlock();
@@ -71,13 +74,16 @@ void polymorph::network::tcp::ClientConnection::_doSend()
 void polymorph::network::tcp::ClientConnection::_doReceive()
 {
     auto self(shared_from_this());
+    _packetHandler.declareReceivingDone();
     _socket.async_receive(asio::buffer(_internalBuffer), [this, self](const asio::error_code &error, std::size_t bytesReceived) {
         if (error || _stopped) {
             _stopped = true;
+            _packetHandler.declareReceivingDone();
             if (!_connectionPool.expired())
                 _connectionPool.lock()->leave(shared_from_this());
             return;
         }
+        _packetHandler.declareReceiving();
         _receiveBuffer.insert(_receiveBuffer.end(), _internalBuffer.begin(), _internalBuffer.begin() + bytesReceived);
         while (_receiveBuffer.size() > sizeof(PacketHeader) ) {
             auto header = SerializerTrait<PacketHeader>::deserialize(_receiveBuffer);
