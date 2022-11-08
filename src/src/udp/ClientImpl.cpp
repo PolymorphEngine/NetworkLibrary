@@ -53,15 +53,15 @@ polymorph::network::udp::ClientImpl::~ClientImpl()
     std::promise<void> promise;
     auto future = promise.get_future();
 
-    while (isWriteInProgress() || isReceiveInProgress()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
     Client::send<DisconnectionDto>(polymorph::network::DisconnectionDto::opId, dto, [&promise](const PacketHeader &header, const DisconnectionDto &payload) {
         promise.set_value();
     });
     future.wait_for(std::chrono::seconds(1));
     if (!_context.stopped())
         _context.stop();
+    while (isWriteInProgress() || isReceiveInProgress()) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
 }
 
 void polymorph::network::udp::ClientImpl::_ackReceived(const asio::ip::udp::endpoint &to,
