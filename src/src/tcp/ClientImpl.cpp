@@ -131,6 +131,8 @@ void polymorph::network::tcp::ClientImpl::_doReceive()
 
 polymorph::network::tcp::ClientImpl::~ClientImpl()
 {
+    if (!_isConnected)
+        return;
     polymorph::network::DisconnectionDto dto;
     std::promise<void> promise;
     auto future = promise.get_future();
