@@ -8,6 +8,7 @@
 
 #include "tcp/ServerImpl.hpp"
 #include "tcp/ClientConnection.hpp"
+#include "polymorph/network/dto/DisconnectionDto.hpp"
 
 std::unique_ptr<polymorph::network::tcp::Server> polymorph::network::tcp::Server::create(std::uint16_t port)
 {
@@ -40,6 +41,26 @@ void polymorph::network::tcp::ServerImpl::_doAccept()
 
 polymorph::network::tcp::ServerImpl::~ServerImpl()
 {
+    polymorph::network::DisconnectionDto dto;
+    std::vector<std::future<void>> futures;
+    std::vector<std::shared_ptr<std::promise<void>>> promises;
+
+    for (auto &connection : _connectionPool->getConnections()) {
+        auto promise = std::make_shared<std::promise<void>>();
+        futures.push_back(promise->get_future());
+        promises.emplace_back(promise);
+
+        auto sId = connection->getSessionId();
+
+        sendTo<polymorph::network::DisconnectionDto>(polymorph::network::DisconnectionDto::opId, dto, sId, [promise](const PacketHeader &header, const polymorph::network::DisconnectionDto &payload) {
+            promise->set_value();
+            return true;
+        });
+    }
+
+    for (auto &future : futures) {
+        future.wait_for(std::chrono::milliseconds(500));
+    }
     if (!_context.stopped())
         _context.stop();
     while (isSending() || isReceiving()) {
