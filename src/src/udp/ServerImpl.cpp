@@ -6,6 +6,7 @@
 */
 
 #include <iostream>
+#include <future>
 #include "udp/ServerImpl.hpp"
 #include "polymorph/network/dto/ConnectionDto.hpp"
 #include "authorizationKey.hpp"
@@ -211,8 +212,27 @@ void polymorph::network::udp::ServerImpl::_send(polymorph::network::OpId opId, c
 
 polymorph::network::udp::ServerImpl::~ServerImpl()
 {
+    polymorph::network::DisconnectionDto dto;
+    std::vector<std::future<void>> futures;
+    std::vector<std::shared_ptr<std::promise<void>>> promises;
+
+    for (auto &connection : _sessionStore.allUdpSessions()) {
+        auto promise = std::make_shared<std::promise<void>>();
+        futures.push_back(promise->get_future());
+        promises.emplace_back(promise);
+
+        sendTo<polymorph::network::DisconnectionDto>(polymorph::network::DisconnectionDto::opId, dto, connection, [promise](const PacketHeader &header, const polymorph::network::DisconnectionDto &payload) {
+            promise->set_value();
+            return true;
+        });
+    }
+
+    for (auto &future : futures) {
+        future.wait_for(std::chrono::milliseconds(500));
+    }
     if (!_context.stopped())
         _context.stop();
-    while(isWriteInProgress() || isReceiveInProgress())
+    while(isWriteInProgress() || isReceiveInProgress()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
 }

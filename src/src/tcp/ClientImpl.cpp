@@ -123,6 +123,11 @@ void polymorph::network::tcp::ClientImpl::_doReceive()
             auto header = SerializerTrait<PacketHeader>::deserialize(_receiveBuffer);
             if (_receiveBuffer.size() >= sizeof(PacketHeader) + header.pSize) {
                 APacketHandler::packetReceived(header, _receiveBuffer);
+                if (header.opId == DisconnectionDto::opId) {
+                    _stopping = true;
+                    _receiveInProgress = false;
+                    return;
+                }
                 _receiveBuffer.erase(_receiveBuffer.begin(), _receiveBuffer.begin() + sizeof(PacketHeader) + header.pSize);
             } else
                 break;
@@ -158,6 +163,8 @@ void polymorph::network::tcp::ClientImpl::_send(polymorph::network::OpId opId, c
         std::cerr << "Trying to send a packet before client is connected" << std::endl;
         return;
     }
+    if (_stopping)
+        return;
     ++_currentPacketId;
     PacketHeader header{};
     header.pId = _currentPacketId;

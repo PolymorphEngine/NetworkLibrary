@@ -17,6 +17,7 @@
 #include "polymorph/network/dto/SessionTransferRequestDto.hpp"
 #include "polymorph/network/dto/SessionTransferResponseDto.hpp"
 #include "tcp/ServerImpl.hpp"
+#include "polymorph/network/dto/DisconnectionDto.hpp"
 
 
 polymorph::network::tcp::ClientConnection::ClientConnection(asio::ip::tcp::socket socket, SessionStore &sessionStore, std::weak_ptr<IConnectionPool> pool, ServerImpl &packetHandler)
@@ -32,6 +33,8 @@ void polymorph::network::tcp::ClientConnection::start()
 
 void polymorph::network::tcp::ClientConnection::send(std::vector<std::byte> data, std::function<void(const PacketHeader &, const std::vector <std::byte> &)> callback)
 {
+    if (_stopped)
+        return;
     std::unique_lock<std::mutex> lock(_sendQueueMutex);
 
     _sendQueue.emplace(std::move(data), std::move(callback));
@@ -88,8 +91,11 @@ void polymorph::network::tcp::ClientConnection::_doReceive()
         while (_receiveBuffer.size() > sizeof(PacketHeader) ) {
             auto header = SerializerTrait<PacketHeader>::deserialize(_receiveBuffer);
             if (_receiveBuffer.size() >= sizeof(PacketHeader) + header.pSize) {
-                if (!_determinePacket(header, _receiveBuffer))
+                if (!_determinePacket(header, _receiveBuffer)) {
+                    _packetHandler.declareReceivingDone();
+                    _stopped = true;
                     return;
+                }
                 _receiveBuffer.erase(_receiveBuffer.begin(), _receiveBuffer.begin() + sizeof(PacketHeader) + header.pSize);
             } else
                 break;
@@ -147,9 +153,11 @@ bool polymorph::network::tcp::ClientConnection::_determinePacket(const polymorph
     } else if (header.opId == SessionTransferRequestDto::opId) {
         _handleSessionTransferPacket(header, bytes);
         return true;
-    } else {
+    } else if (header.opId == DisconnectionDto::opId) {
+        _broadcastReceivedPacket(header, bytes);
+        return false;
+    } else
         return _broadcastReceivedPacket(header, bytes);
-    }
 }
 
 bool polymorph::network::tcp::ClientConnection::isConnected()
