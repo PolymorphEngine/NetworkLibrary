@@ -58,7 +58,7 @@ namespace polymorph::network::udp
             /**
              * @property The callbacks to call when a packet is received
              */
-            std::map<OpId, std::vector<std::function<void(const PacketHeader &, const std::vector<std::byte> &)>>> _receiveCallbacks;
+            std::map<OpId, std::vector<std::shared_ptr<std::function<int(const PacketHeader &, const std::vector<std::byte> &)>>>> _receiveCallbacks;
 
             /**
              * @property The callbacks to call when a packet is sent
@@ -110,7 +110,7 @@ namespace polymorph::network::udp
              */
             void _broadcastReceivedPacket(const PacketHeader &header, const std::vector<std::byte> &bytes);
 
-            void _registerReceiveHandler(polymorph::network::OpId opId, std::function<void(const PacketHeader &, const std::vector<std::byte> &)> handler) override;
+            void _registerReceiveHandler(polymorph::network::OpId opId, std::function<int(const PacketHeader &, const std::vector<std::byte> &)> handler) override;
 
 
 

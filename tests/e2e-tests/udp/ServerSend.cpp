@@ -31,6 +31,7 @@ TEST(udpE2E, ServerSend)
     auto client = Client::create("127.0.0.1", 4242, safeties);
     client->registerReceiveHandler<std::uint16_t>(10, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
+        return true;
     });
 
     // Client Infos
@@ -73,9 +74,11 @@ TEST(udpE2E, OpIdDispatchServerSend)
     auto client = Client::create("127.0.0.1", 4242, safeties);
     client->registerReceiveHandler<std::uint16_t>(10, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
+        return true;
     });
     client->registerReceiveHandler<std::uint8_t>(11, [&output_char](const PacketHeader &, std::uint8_t payload) {
         output_char = payload;
+        return true;
     });
 
     // Client Infos
@@ -102,6 +105,8 @@ TEST(udpE2E, ServerDispatchToAllClients)
     bool client1Passed = false;
     bool client2Passed = false;
     std::uint16_t checkPayload = 42;
+    std::uint16_t received1 = 0;
+    std::uint16_t received2 = 0;
 
     using namespace polymorph::network;
     using namespace polymorph::network::udp;
@@ -115,16 +120,18 @@ TEST(udpE2E, ServerDispatchToAllClients)
 
     // Client1 Setup
     auto client1 = Client::create("127.0.0.1", 4242, safeties);
-    client1->registerReceiveHandler<std::uint16_t>(10, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
-        ASSERT_EQ(payload, checkPayload);
+    client1->registerReceiveHandler<std::uint16_t>(10, [&client1Passed, &received1](const PacketHeader &, auto &payload) {
+        received1 = payload;
         client1Passed = true;
+        return true;
     });
 
     // Client2 Setup
     auto client2 = Client::create("127.0.0.1", 4242, safeties);
-    client2->registerReceiveHandler<std::uint16_t>(10, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
-        ASSERT_EQ(payload, checkPayload);
+    client2->registerReceiveHandler<std::uint16_t>(10, [&client2Passed, &received2](const PacketHeader &, uint16_t payload) {
+        received2 = payload;
         client2Passed = true;
+        return true;
     });
 
     // Client Infos
@@ -150,6 +157,8 @@ TEST(udpE2E, ServerDispatchToAllClients)
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(client1Passed);
     ASSERT_TRUE(client2Passed);
+    ASSERT_EQ(checkPayload, received1);
+    ASSERT_EQ(checkPayload, received2);
 }
 
 TEST(udpE2E, ServerSendOnlyOneClient)
@@ -158,6 +167,8 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     bool client1Passed = false;
     bool client2Passed = true;
     std::uint16_t checkPayload = 42;
+    std::uint16_t received1 = 0;
+    std::uint16_t received2 = 0;
 
     using namespace polymorph::network;
     using namespace polymorph::network::udp;
@@ -171,16 +182,18 @@ TEST(udpE2E, ServerSendOnlyOneClient)
 
     // Client1 Setup
     auto client1 = Client::create("127.0.0.1", 4242, safeties);
-    client1->registerReceiveHandler<std::uint16_t>(10, [&client1Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
-        ASSERT_EQ(payload, checkPayload);
+    client1->registerReceiveHandler<std::uint16_t>(10, [&client1Passed, &received1](const PacketHeader &, uint16_t payload) {
+        received1 = payload;
         client1Passed = true;
+        return true;
     });
 
     // Client2 Setup
     auto client2 = Client::create("127.0.0.1", 4242, safeties);
-    client2->registerReceiveHandler<std::uint16_t>(10, [&client2Passed, &checkPayload](const PacketHeader &, uint16_t payload) {
-        ASSERT_EQ(payload, checkPayload);
+    client2->registerReceiveHandler<std::uint16_t>(10, [&client2Passed, &received2](const PacketHeader &, uint16_t payload) {
+        received2 = payload;
         client2Passed = false;
+        return true;
     });
 
     // Client Infos
@@ -206,6 +219,8 @@ TEST(udpE2E, ServerSendOnlyOneClient)
     PNL_WAIT(PNL_TIME_OUT)
     ASSERT_TRUE(client1Passed);
     ASSERT_TRUE(client2Passed);
+    ASSERT_EQ(checkPayload, received1);
+    ASSERT_EQ(0, received2);
 }
 
 TEST(udpE2E, ServerSendCallback)
@@ -229,6 +244,7 @@ TEST(udpE2E, ServerSendCallback)
     auto client = Client::create("127.0.0.1", 4242, safeties);
     client->registerReceiveHandler<std::uint16_t>(10, [&output_data](const PacketHeader &, uint16_t payload) {
         output_data = payload;
+        return true;
     });
 
     // Client Infos

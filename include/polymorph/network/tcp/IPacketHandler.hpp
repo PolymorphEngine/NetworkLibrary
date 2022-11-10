@@ -28,7 +28,7 @@ namespace polymorph::network::tcp {
              * @param   handler The receive handler function
              */
             template<typename T>
-            void registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const PacketHeader &, const T &)> handler)
+            void registerReceiveHandler(polymorph::network::OpId opId, std::function<int(const PacketHeader &, const T &)> handler)
             {
                 _registerReceiveHandler(opId, [handler](const PacketHeader &header, const std::vector<std::byte> &bytes) {
                     Packet<T> packet = SerializerTrait<Packet<T>>::deserialize(bytes);
@@ -45,6 +45,6 @@ namespace polymorph::network::tcp {
 
 
         private:
-            virtual void _registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const PacketHeader &, const std::vector<std::byte> &)> handler) = 0;
+            virtual void _registerReceiveHandler(polymorph::network::OpId opId, std::function<int(const PacketHeader &, const std::vector<std::byte> &)> handler) = 0;
     };
 }

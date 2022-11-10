@@ -37,16 +37,16 @@ void polymorph::network::tcp::ClientImpl::connect(std::function<void(bool, Sessi
 
         _doReceive();
 
-        ConnectionDto dto{ 0, 0};
-        send<ConnectionDto>(ConnectionDto::opId, dto);
-        _isConnecting = false;
-
         registerReceiveHandler<ConnectionResponseDto>(ConnectionResponseDto::opId, [this, callback](const PacketHeader &header, const ConnectionResponseDto &payload) {
             _isConnected = payload.authorized;
             _currentSession = header.sId;
             callback(payload.authorized, header.sId);
             return true;
         });
+
+        ConnectionDto dto{ 0, 0};
+        send<ConnectionDto>(ConnectionDto::opId, dto);
+        _isConnecting = false;
     });
     _run();
 }
@@ -66,15 +66,16 @@ void polymorph::network::tcp::ClientImpl::connectWithSession(polymorph::network:
 
         _doReceive();
 
-        ConnectionDto dto{ .sessionId = session, .authKey = authKey };
-        send<ConnectionDto>(ConnectionDto::opId, dto);
-        _isConnecting = false;
-
         registerReceiveHandler<ConnectionResponseDto>(ConnectionResponseDto::opId, [this, callback](const PacketHeader &header, const ConnectionResponseDto &payload) {
             _isConnected = payload.authorized;
             callback(payload.authorized, header.sId);
             return true;
         });
+
+
+        ConnectionDto dto{ .sessionId = session, .authKey = authKey };
+        send<ConnectionDto>(ConnectionDto::opId, dto);
+        _isConnecting = false;
     });
     _run();
 }

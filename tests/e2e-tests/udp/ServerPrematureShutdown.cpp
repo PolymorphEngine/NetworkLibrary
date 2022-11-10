@@ -31,6 +31,7 @@ TEST(udpE2E, ServerPrematureShutdown)
         server->start();
         server->registerReceiveHandler<std::uint16_t>(10, [&output_data](const PacketHeader &, uint16_t payload) {
             output_data = payload;
+            return true;
         });
         // Client Setup
         client = Client::create("127.0.0.1", 4242, safeties);

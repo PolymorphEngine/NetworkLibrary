@@ -21,7 +21,10 @@ bool polymorph::network::udp::ServerPacketManager::registerClient(const asio::ip
 
     std::lock_guard<std::mutex> lock(_clientsStoresMutex);
 
-    return _packetStores.emplace(endpoint, std::make_unique<PacketStore>(_io_context, _safeties, _resendCallback)).second;
+    auto ret = _packetStores.emplace(endpoint, std::make_unique<PacketStore>(_io_context, _safeties)).second;
+    if  (ret)
+        _packetStores[endpoint]->setResendCallback(_resendCallback);
+    return ret;
 }
 
 bool polymorph::network::udp::ServerPacketManager::removeClient(

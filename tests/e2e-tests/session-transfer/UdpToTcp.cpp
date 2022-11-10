@@ -46,6 +46,7 @@ TEST(sessionTransferE2E, UdpToTcp)
     udpClient->registerReceiveHandler<SessionTransferResponseDto>(SessionTransferResponseDto::opId, [&authKey, &authKeyReceived](const PacketHeader &, const SessionTransferResponseDto &response) {
         authKey = response.authKey;
         authKeyReceived = true;
+        return true;
     });
     udpClient->send(SessionTransferRequestDto::opId, request);
 
