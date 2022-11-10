@@ -72,13 +72,21 @@ void polymorph::network::udp::APacketHandler::_broadcastReceivedPacket(const pol
                                                                        const std::vector<std::byte> &bytes)
 {
     if (_receiveCallbacks.contains(header.opId)) {
+        std::vector<std::shared_ptr<std::function<int(const PacketHeader &, const std::vector<std::byte> &)>>> callbacksToPop;
+
         for (auto &callback : _receiveCallbacks[header.opId]) {
-            callback(header, bytes);
+            auto res = (*callback)(header, bytes);
+            if (res == 0)
+                callbacksToPop.push_back(callback);
+        }
+        for (auto &callback : callbacksToPop) {
+            auto it = std::find(_receiveCallbacks[header.opId].begin(), _receiveCallbacks[header.opId].end(), callback);
+            _receiveCallbacks[header.opId].erase(it);
         }
     }
 }
 
-void polymorph::network::udp::APacketHandler::_registerReceiveHandler(polymorph::network::OpId opId, std::function<void(const PacketHeader &, const std::vector<std::byte> &)> handler)
+void polymorph::network::udp::APacketHandler::_registerReceiveHandler(polymorph::network::OpId opId, std::function<int(const PacketHeader &, const std::vector<std::byte> &)> handler)
 {
-    _receiveCallbacks[opId].emplace_back(std::move(handler));
+    _receiveCallbacks[opId].emplace_back(std::make_shared<std::function<int(const PacketHeader &, const std::vector<std::byte> &)>>(std::move(handler)));
 }

@@ -52,7 +52,7 @@ TEST(sessionTransferE2E, TcpToUdp)
         }
     );
     tcpClient->send(SessionTransferRequestDto::opId, request);
-    PNL_WAIT(PNL_TIME_OUT)
+    PNL_WAIT(PNL_TIME_OUT * 2)
     ASSERT_TRUE(authKeyReceived);
 
 // Server Setup

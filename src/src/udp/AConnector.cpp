@@ -36,38 +36,44 @@ void polymorph::network::udp::AConnector::_doReceive()
 {
     _receiveInProgress = false;
     _socket.async_receive_from(asio::buffer(_receiveBuffer), _endpoint,
-       [this](const asio::error_code &error, std::size_t bytesReceived) {
-           if (error) {
-               std::cerr << "Error while receiving data: " << error.message() << std::endl;
-               return;
-           }
-           _receiveInProgress = true;
-           std::vector<std::byte> data(_receiveBuffer.begin(), _receiveBuffer.begin() + bytesReceived);
-           _determinePacket(data);
-           _doReceive();
-       });
+        [this](const asio::error_code &error, std::size_t bytesReceived) {
+            if (error == asio::error::operation_aborted || _stopping)
+                return;
+            if (error) {
+                std::cerr << "Error while receiving data: " << error.message() << std::endl;
+                return;
+            }
+            _receiveInProgress = true;
+            std::vector<std::byte> data(_receiveBuffer.begin(), _receiveBuffer.begin() + bytesReceived);
+            _determinePacket(data);
+            _doReceive();
+        }
+    );
 }
 
 void polymorph::network::udp::AConnector::_doSend()
 {
     std::lock_guard<std::mutex> lock(_sendQueueMutex);
     _socket.async_send_to(asio::buffer(_sendQueue.front().second), _sendQueue.front().first,
-       [this](const asio::error_code &error, std::size_t) {
-           if (error) {
-               std::cerr << "Error while sending packet: " << error.message() << std::endl;
-               return;
-           }
-           std::unique_lock<std::mutex> lock(_sendQueueMutex);
-           auto header = SerializerTrait<PacketHeader>::deserialize(_sendQueue.front().second);
-           _packetSent(_sendQueue.front().first, header, _sendQueue.front().second);
-           _sendQueue.pop();
-           if (!_sendQueue.empty()) {
-                lock.unlock();
-               _doSend();
-           } else {
-               _writeInProgress = false;
-           }
-       });
+        [this](const asio::error_code &error, std::size_t) {
+            if (error == asio::error::operation_aborted || _stopping)
+                return;
+            if (error) {
+                std::cerr << "Error while sending packet: " << error.message() << std::endl;
+                return;
+            }
+            std::unique_lock<std::mutex> lock(_sendQueueMutex);
+            auto header = SerializerTrait<PacketHeader>::deserialize(_sendQueue.front().second);
+            _packetSent(_sendQueue.front().first, header, _sendQueue.front().second);
+            _sendQueue.pop();
+            if (!_sendQueue.empty()) {
+                 lock.unlock();
+                _doSend();
+            } else {
+                _writeInProgress = false;
+            }
+        }
+   );
 }
 
 void polymorph::network::udp::AConnector::_determinePacket(const std::vector<std::byte> &data)
@@ -96,4 +102,9 @@ bool polymorph::network::udp::AConnector::isWriteInProgress() const
 bool polymorph::network::udp::AConnector::isReceiveInProgress() const
 {
     return _receiveInProgress;
+}
+
+void polymorph::network::udp::AConnector::stop()
+{
+    _stopping = true;
 }

@@ -22,18 +22,27 @@ bool
 polymorph::network::tcp::APacketHandler::packetReceived(const PacketHeader&, const std::vector<std::byte> &bytes)
 {
     PacketHeader header {0};
+    int res;
+    std::vector<std::shared_ptr<std::function<int(const PacketHeader &header, const std::vector<std::byte> &bytes)>>> callbacksToPop;
 
     try {
         header = SerializerTrait<PacketHeader>::deserialize(bytes);
         if (_receiveCallbacks.contains(header.opId)) {
             for (auto &callback : _receiveCallbacks[header.opId]) {
-                if (!callback(header, bytes))
+                res = (*callback)(header, bytes);
+                if (res == -1)
                     return false;
+                if (res == 0)
+                    callbacksToPop.push_back(callback);
             }
         }
     } catch (const exceptions::DeserializingException &e) {
         std::cerr << "Error while deserializing packet header: " << e.what() << std::endl;
         return false;
+    }
+    for (auto &toPop: callbacksToPop) {
+        auto it = std::find(_receiveCallbacks[header.opId].begin(), _receiveCallbacks[header.opId].end(), toPop);
+        _receiveCallbacks[header.opId].erase(it);
     }
     return true;
 }
@@ -50,7 +59,7 @@ void polymorph::network::tcp::APacketHandler::_run()
     });
 }
 
-void polymorph::network::tcp::APacketHandler::_registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const PacketHeader &, const std::vector<std::byte> &)> handler)
+void polymorph::network::tcp::APacketHandler::_registerReceiveHandler(polymorph::network::OpId opId, std::function<int(const PacketHeader &, const std::vector<std::byte> &)> handler)
 {
-    _receiveCallbacks[opId].emplace_back(std::move(handler));
+    _receiveCallbacks[opId].emplace_back(std::make_shared<std::function<int(const PacketHeader &, const std::vector<std::byte> &)>>(std::move(handler)));
 }

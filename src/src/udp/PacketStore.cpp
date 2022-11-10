@@ -11,9 +11,8 @@
 #include "udp/SafePacketManager.hpp"
 
 
-polymorph::network::udp::PacketStore::PacketStore(asio::io_context &context, std::map<OpId, bool> safeties,
-        std::function<void(std::shared_ptr<SafePacketManager>)> resendCallback)
-    : _context(context), _safeties(std::move(safeties)), _resendCallback(std::move(resendCallback))
+polymorph::network::udp::PacketStore::PacketStore(asio::io_context &context, std::map<OpId, bool> safeties)
+    : _context(context), _safeties(std::move(safeties))
 {
     if (_safeties.contains(0))
         std::cerr << "OpId 0 is reserved for internal use" << std::endl;
@@ -76,4 +75,11 @@ polymorph::network::udp::PacketStore::_markAsAC(polymorph::network::PacketHeader
         this->_resendCallback(manager);
     });
     _safeSent.push_back(std::move(manager));
+}
+
+void polymorph::network::udp::PacketStore::setResendCallback(
+        std::function<void(std::shared_ptr<SafePacketManager>)> callback)
+{
+    _resendCallback = std::move(callback);
+
 }
