@@ -230,6 +230,7 @@ polymorph::network::udp::ServerImpl::~ServerImpl()
     for (auto &future : futures) {
         future.wait_for(std::chrono::milliseconds(500));
     }
+    stop();
     if (!_context.stopped())
         _context.stop();
     while(isWriteInProgress() || isReceiveInProgress()) {

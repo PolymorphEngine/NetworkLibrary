@@ -26,7 +26,7 @@ namespace polymorph::network::udp
 ////////////////////// CONSTRUCTORS/DESTRUCTORS /////////////////////////
 
         public:
-            PacketStore(asio::io_context &context, std::map<OpId, bool> safeties, std::function<void(std::shared_ptr<SafePacketManager>)> resendCallback);
+            PacketStore(asio::io_context &context, std::map<OpId, bool> safeties);
 
 
             ~PacketStore() = default;
@@ -112,6 +112,8 @@ namespace polymorph::network::udp
              * @param id The id of the packet to remove
              */
             void confirmSent(const asio::ip::udp::endpoint &endpoint, const PacketId &id);
+
+            void setResendCallback(std::function<void(std::shared_ptr<SafePacketManager>)> callback);
 
         private:
 

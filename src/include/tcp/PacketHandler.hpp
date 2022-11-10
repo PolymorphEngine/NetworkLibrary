@@ -52,7 +52,7 @@ namespace polymorph::network::tcp
          * @brief   The packet handlers are functions that will be called when a packet with the corresponding operation code is received
          */
         std::map<polymorph::network::OpId,
-            std::vector<std::function<bool(const PacketHeader &header, const std::vector<std::byte> &bytes)>>> _receiveCallbacks;
+            std::vector<std::shared_ptr<std::function<int(const PacketHeader &header, const std::vector<std::byte> &bytes)>>>> _receiveCallbacks;
         /**
          * @property Thread that will handle the network operations (asio context)
          */
@@ -83,7 +83,7 @@ namespace polymorph::network::tcp
 
 
     private:
-        void _registerReceiveHandler(polymorph::network::OpId opId, std::function<bool(const PacketHeader &, const std::vector<std::byte> &)> handler) override;
+        void _registerReceiveHandler(polymorph::network::OpId opId, std::function<int(const PacketHeader &, const std::vector<std::byte> &)> handler) override;
 
 
 
