@@ -75,6 +75,10 @@ void polymorph::network::udp::APacketHandler::_broadcastReceivedPacket(const pol
         std::vector<std::shared_ptr<std::function<int(const PacketHeader &, const std::vector<std::byte> &)>>> callbacksToPop;
 
         for (auto &callback : _receiveCallbacks[header.opId]) {
+            if (!callback) {
+                callbacksToPop.push_back(callback);
+                continue;
+            }
             auto res = (*callback)(header, bytes);
             if (res == 0)
                 callbacksToPop.push_back(callback);
