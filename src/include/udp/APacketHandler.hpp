@@ -56,9 +56,26 @@ namespace polymorph::network::udp
             std::thread _thread;
 
             /**
+             * @property The mutex used to lock the receive callbacks map add queue
+             */
+            std::mutex _receiveCallbacksAddQueueMutex;
+
+            /**
+             * @property The mutex used to lock the receive callbacks map remove queue
+             */
+            std::mutex _receiveCallbacksRemoveQueueMutex;
+
+            /**
              * @property The callbacks to call when a packet is received
              */
             std::map<OpId, std::vector<std::shared_ptr<std::function<int(const PacketHeader &, const std::vector<std::byte> &)>>>> _receiveCallbacks;
+
+            /**
+             * @property The callbacks to call when a packet is received
+             */
+            std::map<OpId, std::vector<std::shared_ptr<std::function<int(const PacketHeader &, const std::vector<std::byte> &)>>>> _receiveCallbacksAddQueue;
+
+            std::vector<OpId> _receiveCallbacksToRemoveQueue;
 
             /**
              * @property The callbacks to call when a packet is sent
@@ -111,6 +128,8 @@ namespace polymorph::network::udp
             void _broadcastReceivedPacket(const PacketHeader &header, const std::vector<std::byte> &bytes);
 
             void _registerReceiveHandler(polymorph::network::OpId opId, std::function<int(const PacketHeader &, const std::vector<std::byte> &)> handler) override;
+
+            void _updateReceiveCallbacksMap();
 
 
 
