@@ -8,6 +8,7 @@
 
 #include <asio/ip/udp.hpp>
 #include <iostream>
+#include <mutex>
 #include "udp/APacketHandler.hpp"
 
 polymorph::network::udp::APacketHandler::APacketHandler(asio::ip::udp::endpoint endpoint)
@@ -54,7 +55,8 @@ void polymorph::network::udp::APacketHandler::_run()
 
 void polymorph::network::udp::APacketHandler::unregisterReceiveHandlers(polymorph::network::OpId opId)
 {
-    _receiveCallbacks.erase(opId);
+    std::unique_lock<std::mutex> lock(_receiveCallbacksRemoveQueueMutex);
+    _receiveCallbacksToRemoveQueue.push_back(opId);
 }
 
 void polymorph::network::udp::APacketHandler::_callAndPopSendCallback(const asio::ip::udp::endpoint& to,
@@ -71,6 +73,8 @@ void polymorph::network::udp::APacketHandler::_callAndPopSendCallback(const asio
 void polymorph::network::udp::APacketHandler::_broadcastReceivedPacket(const polymorph::network::PacketHeader &header,
                                                                        const std::vector<std::byte> &bytes)
 {
+    _updateReceiveCallbacksMap();
+
     if (_receiveCallbacks.contains(header.opId)) {
         std::vector<std::shared_ptr<std::function<int(const PacketHeader &, const std::vector<std::byte> &)>>> callbacksToPop;
 
@@ -80,6 +84,7 @@ void polymorph::network::udp::APacketHandler::_broadcastReceivedPacket(const pol
                 continue;
             }
             auto res = (*callback)(header, bytes);
+
             if (res == 0)
                 callbacksToPop.push_back(callback);
         }
@@ -92,5 +97,26 @@ void polymorph::network::udp::APacketHandler::_broadcastReceivedPacket(const pol
 
 void polymorph::network::udp::APacketHandler::_registerReceiveHandler(polymorph::network::OpId opId, std::function<int(const PacketHeader &, const std::vector<std::byte> &)> handler)
 {
-    _receiveCallbacks[opId].emplace_back(std::make_shared<std::function<int(const PacketHeader &, const std::vector<std::byte> &)>>(std::move(handler)));
+    std::unique_lock<std::mutex> lock(_receiveCallbacksAddQueueMutex);
+
+    _receiveCallbacksAddQueue[opId].emplace_back(std::make_shared<std::function<int(const PacketHeader &, const std::vector<std::byte> &)>>(std::move(handler)));
+}
+
+void polymorph::network::udp::APacketHandler::_updateReceiveCallbacksMap()
+{
+    {
+        std::scoped_lock lock(_receiveCallbacksAddQueueMutex);
+        for (auto &pair : _receiveCallbacksAddQueue) {
+            std::copy(pair.second.begin(), pair.second.end(), std::back_inserter(_receiveCallbacks[pair.first]));
+            _receiveCallbacksAddQueue[pair.first].clear();
+        }
+    }
+    {
+        std::scoped_lock lock(_receiveCallbacksRemoveQueueMutex);
+        for (auto toRemove : _receiveCallbacksToRemoveQueue) {
+            if (_receiveCallbacks.contains(toRemove)) {
+                _receiveCallbacks[toRemove].clear();
+            }
+        }
+    }
 }

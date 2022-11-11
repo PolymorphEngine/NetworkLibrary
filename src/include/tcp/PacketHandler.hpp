@@ -53,6 +53,15 @@ namespace polymorph::network::tcp
          */
         std::map<polymorph::network::OpId,
             std::vector<std::shared_ptr<std::function<int(const PacketHeader &header, const std::vector<std::byte> &bytes)>>>> _receiveCallbacks;
+
+        std::mutex _receiveCallbacksAddQueueMutex;
+        std::mutex _receiveCallbacksRemoveMutex;
+
+        std::map<polymorph::network::OpId,
+            std::vector<std::shared_ptr<std::function<int(const PacketHeader &header, const std::vector<std::byte> &bytes)>>>> _receiveCallbacksAddQueue;
+
+        std::vector<OpId > _receiveCallbacksToRemoveQueue;
+
         /**
          * @property Thread that will handle the network operations (asio context)
          */
@@ -84,6 +93,8 @@ namespace polymorph::network::tcp
 
     private:
         void _registerReceiveHandler(polymorph::network::OpId opId, std::function<int(const PacketHeader &, const std::vector<std::byte> &)> handler) override;
+
+        void _updateReceiveCallbacksMap();
 
 
 
