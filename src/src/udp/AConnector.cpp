@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <mutex>
+#include <future>
 #include "udp/AConnector.hpp"
 #include "polymorph/network/SerializerTrait.hpp"
 #include "polymorph/network/dto/ACKDto.hpp"
@@ -34,7 +35,6 @@ void polymorph::network::udp::AConnector::startConnection()
 
 void polymorph::network::udp::AConnector::_doReceive()
 {
-    _receiveInProgress = false;
     _socket.async_receive_from(asio::buffer(_receiveBuffer), _endpoint,
         [this](const asio::error_code &error, std::size_t bytesReceived) {
             if (error == asio::error::operation_aborted || _stopping)
@@ -43,9 +43,12 @@ void polymorph::network::udp::AConnector::_doReceive()
                 std::cerr << "Error while receiving data: " << error.message() << std::endl;
                 return;
             }
-            _receiveInProgress = true;
-            std::vector<std::byte> data(_receiveBuffer.begin(), _receiveBuffer.begin() + bytesReceived);
-            _determinePacket(data);
+            std::async(std::launch::async, [this, bytesReceived]() {
+                _receiveInProgress = true;
+                std::vector<std::byte> data(_receiveBuffer.begin(), _receiveBuffer.begin() + bytesReceived);
+                _determinePacket(data);
+                _receiveInProgress = false;
+            });
             _doReceive();
         }
     );
